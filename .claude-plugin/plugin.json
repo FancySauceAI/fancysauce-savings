@@ -1,0 +1,19 @@
+{
+  "name": "fancysauce-savings",
+  "description": "Cost and usage observability for Claude Code",
+  "version": "0.3.0",
+  "author": {
+    "name": "FancySauceAI"
+  },
+  "homepage": "https://github.com/FancySauceAI/fancytab",
+  "repository": "https://github.com/FancySauceAI/fancytab",
+  "license": "MIT",
+  "keywords": [
+    "observability",
+    "cost",
+    "telemetry",
+    "otel",
+    "cache-analysis",
+    "claude-code"
+  ]
+}

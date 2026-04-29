@@ -1,0 +1,46 @@
+{
+  "hooks": {
+    "SessionStart": [
+      { "matcher": "", "hooks": [{ "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/team/hooks/collect.mjs" }] }
+    ],
+    "SessionEnd": [
+      { "matcher": "", "hooks": [{ "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/team/hooks/collect.mjs" }] }
+    ],
+    "UserPromptSubmit": [
+      { "matcher": "", "hooks": [{ "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/team/hooks/collect.mjs" }] }
+    ],
+    "PreToolUse": [
+      { "matcher": "", "hooks": [{ "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/team/hooks/collect.mjs" }] }
+    ],
+    "PostToolUse": [
+      { "matcher": "", "hooks": [{ "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/team/hooks/collect.mjs" }] }
+    ],
+    "PostToolUseFailure": [
+      { "matcher": "", "hooks": [{ "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/team/hooks/collect.mjs" }] }
+    ],
+    "SubagentStart": [
+      { "matcher": "", "hooks": [{ "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/team/hooks/collect.mjs" }] }
+    ],
+    "SubagentStop": [
+      { "matcher": "", "hooks": [{ "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/team/hooks/collect.mjs" }] }
+    ],
+    "PreCompact": [
+      { "matcher": "", "hooks": [{ "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/team/hooks/collect.mjs" }] }
+    ],
+    "Stop": [
+      { "matcher": "", "hooks": [{ "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/team/hooks/collect.mjs" }] }
+    ],
+    "ConfigChange": [
+      { "matcher": "", "hooks": [{ "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/team/hooks/collect.mjs" }] }
+    ],
+    "Notification": [
+      { "matcher": "", "hooks": [{ "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/team/hooks/collect.mjs" }] }
+    ],
+    "TaskCompleted": [
+      { "matcher": "", "hooks": [{ "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/team/hooks/collect.mjs" }] }
+    ],
+    "PermissionRequest": [
+      { "matcher": "", "hooks": [{ "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/team/hooks/collect.mjs" }] }
+    ]
+  }
+}

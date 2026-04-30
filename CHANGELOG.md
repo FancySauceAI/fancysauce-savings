@@ -2,6 +2,21 @@
 
 All public releases of `fancysauce-savings`. Most recent first.
 
+## v0.4.0 — 2026-04-30
+
+### Features
+
+- feat(team): per-tenant URL marketplace install flow — eliminates the managed-settings `env` block by serving a per-tenant `marketplace.json` from the dashboard backend with the API key + endpoint inlined into the hook command args. See [`docs/plans/2026-04-29-per-tenant-url-marketplace-design.md`](https://github.com/FancySauceAI/fancytab/blob/main/docs/plans/2026-04-29-per-tenant-url-marketplace-design.md).
+- feat(team): `loadConfig` reads `--api-key` / `--endpoint` from argv (env vars remain as a fallback for backward compatibility).
+
+### Build
+
+- build(release): drop `hooks/hooks.json` and `.claude-plugin/marketplace.json` from the published artifact; the URL marketplace declares hooks inline with `strict: false`.
+
+### Documentation
+
+- docs(release): rewrite README install instructions for the URL-marketplace flow.
+
 ## v0.3.0 — 2026-04-28
 
 ### Features

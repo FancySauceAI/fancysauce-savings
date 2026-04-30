@@ -1616,9 +1616,26 @@ import { join as join8 } from "node:path";
 import { homedir } from "node:os";
 
 // dist/team/lib/config.mjs
-function loadConfig() {
-  const apiKey = process.env.FANCYSAUCE_API_KEY;
-  const endpoint = process.env.FANCYSAUCE_ENDPOINT;
+function parseArgv(argv) {
+  const out = {};
+  for (let i = 0; i < argv.length; i++) {
+    const tok = argv[i];
+    if (tok === "--api-key" && i + 1 < argv.length) {
+      out.apiKey = argv[++i];
+    } else if (tok.startsWith("--api-key=")) {
+      out.apiKey = tok.slice("--api-key=".length);
+    } else if (tok === "--endpoint" && i + 1 < argv.length) {
+      out.endpoint = argv[++i];
+    } else if (tok.startsWith("--endpoint=")) {
+      out.endpoint = tok.slice("--endpoint=".length);
+    }
+  }
+  return out;
+}
+function loadConfig(opts = {}) {
+  const fromArgv = parseArgv(opts.argv ?? process.argv);
+  const apiKey = fromArgv.apiKey ?? process.env.FANCYSAUCE_API_KEY;
+  const endpoint = fromArgv.endpoint ?? process.env.FANCYSAUCE_ENDPOINT;
   if (!apiKey || !endpoint)
     return null;
   if (!endpoint.startsWith("https://")) {
@@ -2809,7 +2826,7 @@ async function main() {
   const killer = setTimeout(() => process.exit(0), HOOK_BUDGET_MS);
   killer.unref?.();
   try {
-    const config = loadConfig();
+    const config = loadConfig({ argv: process.argv });
     if (!config)
       return;
     const hookPayload = readStdin();

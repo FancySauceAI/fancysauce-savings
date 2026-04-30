@@ -2,6 +2,12 @@
 
 All public releases of `fancysauce-savings`. Most recent first.
 
+## v0.4.1 — 2026-04-30
+
+### Fixes
+
+- fix(release): drop `.claude-plugin/plugin.json` from the published artifact. v0.4.0 shipped a metadata-only plugin.json which Claude Code rejects under `strict: false` with "conflicting manifests: both plugin.json and marketplace entry specify components" — even though the plugin.json declared zero components. Empirically verified against Claude Code 2.1.123. The marketplace entry's `name` and `version` carry plugin identity now.
+
 ## v0.4.0 — 2026-04-30
 
 ### Features

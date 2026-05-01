@@ -2,6 +2,12 @@
 
 All public releases of `fancysauce-savings`. Most recent first.
 
+## v0.4.2 — 2026-04-30
+
+### Fixes
+
+- fix(release): drop `dist/team/hooks/hooks.json` from the published artifact. It was a build-time copy not used by the runtime (the bundled `collect.mjs` is what fires; the JSON next to it isn't read), but Claude Code's plugin display picked it up and rendered it as a stray `[object Object]` entry alongside the marketplace's hook events.
+
 ## v0.4.1 — 2026-04-30
 
 ### Fixes

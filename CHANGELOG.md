@@ -2,6 +2,15 @@
 
 All public releases of `fancysauce-savings`. Most recent first.
 
+## v0.4.3 — 2026-05-05
+
+### Fixes
+
+- fix(team): backoff invalidation on config change. Previously, when the backend changed the rendered marketplace's `--endpoint` or `--api-key`, an existing accumulated backoff (e.g., `transientAttempts: 20` → next retry hours away) would keep applying to the new config. Events queued against the old endpoint stayed stranded for hours after the fix was deployed. The forwarder now stamps the (api_key, endpoint) fingerprint on `backoff.json` and on each flush:
+  - **API key change** → drop queued events (different tenant) + reset backoff.
+  - **Endpoint change only** → retain queued events (same tenant, new ingest URL) + reset backoff so retries re-engage immediately against the new endpoint.
+  - **No change** → no-op.
+
 ## v0.4.2 — 2026-04-30
 
 ### Fixes

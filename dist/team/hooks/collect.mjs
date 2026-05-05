@@ -2350,6 +2350,37 @@ var BackoffState = class {
       await this.save(f);
     });
   }
+  async readConfigFingerprint() {
+    const f = await this.loadFile();
+    return { apiKeyHash: f.apiKeyHash, endpointHash: f.endpointHash };
+  }
+  // One-shot reset used when (api_key, endpoint) has changed under the
+  // forwarder's feet. Clears the retry deadline, the transient counter, and
+  // the auth-failure counter, then stamps the new fingerprint. Caller is
+  // responsible for any queue-side action (drop vs. retain).
+  async resetForConfigChange(fp) {
+    await withDirLock(this.dir, async () => {
+      const f = await this.loadFile();
+      f.nextRetryAt = void 0;
+      f.transientAttempts = 0;
+      f.consecutiveAuthFailures = 0;
+      f.apiKeyHash = fp.apiKeyHash;
+      f.endpointHash = fp.endpointHash;
+      await this.save(f);
+    });
+  }
+  // Initialize the fingerprint without touching counters. Used on the first
+  // flush after this code lands (no prior fingerprint stored), where the
+  // counters may already reflect legitimate transient failures we don't want
+  // to clear just because we're stamping the file for the first time.
+  async initConfigFingerprint(fp) {
+    await withDirLock(this.dir, async () => {
+      const f = await this.loadFile();
+      f.apiKeyHash = fp.apiKeyHash;
+      f.endpointHash = fp.endpointHash;
+      await this.save(f);
+    });
+  }
   async loadFile() {
     try {
       const buf = await readFile5(this.path, "utf8");
@@ -2595,6 +2626,12 @@ function encodeAnyValue(key, v) {
   }
 }
 
+// dist/team/lib/config-fingerprint.mjs
+import { createHash as createHash3 } from "node:crypto";
+function fingerprint(value) {
+  return createHash3("sha256").update(value).digest("hex").slice(0, 16);
+}
+
 // dist/team/lib/flusher.mjs
 var DEFAULT_MAX_EVENTS = 100;
 var DEFAULT_MAX_BYTES = 1e6;
@@ -2608,6 +2645,7 @@ async function tryFlush(input) {
   const backoff = new BackoffState(input.dataDir);
   const cursor = new FlushCursor(input.dataDir);
   const health = new HealthState(input.stateDir);
+  await reconcileConfigFingerprint(input, backoff, cursor, queuePath);
   const b = await backoff.read();
   if (b.nextRetryAt && b.nextRetryAt > Date.now()) {
     return { skipped: true, reason: "backoff deadline in future" };
@@ -2758,6 +2796,30 @@ async function maybeCompact(dataDir2, cursor, queuePath) {
       if (fh)
         await fh.close();
     }
+  });
+}
+async function reconcileConfigFingerprint(input, backoff, cursor, queuePath) {
+  const current = {
+    apiKeyHash: fingerprint(input.apiKey),
+    endpointHash: fingerprint(input.endpoint)
+  };
+  const stored = await backoff.readConfigFingerprint();
+  if (!stored.apiKeyHash || !stored.endpointHash) {
+    await backoff.initConfigFingerprint(current);
+    return;
+  }
+  if (stored.apiKeyHash === current.apiKeyHash && stored.endpointHash === current.endpointHash) {
+    return;
+  }
+  if (stored.apiKeyHash !== current.apiKeyHash) {
+    await dropQueue(input.dataDir, queuePath, cursor);
+  }
+  await backoff.resetForConfigChange(current);
+}
+async function dropQueue(dataDir2, queuePath, cursor) {
+  await withDirLock(dataDir2, async () => {
+    await writeFile6(queuePath, "");
+    await cursor.resetUnlocked();
   });
 }
 function revive(v) {

@@ -99,7 +99,7 @@ var require_polyfills = __commonJS({
       }
       if (platform === "win32") {
         fs.rename = typeof fs.rename !== "function" ? fs.rename : (function(fs$rename) {
-          function rename6(from, to, cb) {
+          function rename7(from, to, cb) {
             var start = Date.now();
             var backoff = 0;
             fs$rename(from, to, function CB(er) {
@@ -119,8 +119,8 @@ var require_polyfills = __commonJS({
               if (cb) cb(er);
             });
           }
-          if (Object.setPrototypeOf) Object.setPrototypeOf(rename6, fs$rename);
-          return rename6;
+          if (Object.setPrototypeOf) Object.setPrototypeOf(rename7, fs$rename);
+          return rename7;
         })(fs.rename);
       }
       fs.read = typeof fs.read !== "function" ? fs.read : (function(fs$read) {
@@ -524,8 +524,8 @@ var require_graceful_fs = __commonJS({
       fs2.createReadStream = createReadStream;
       fs2.createWriteStream = createWriteStream;
       var fs$readFile = fs2.readFile;
-      fs2.readFile = readFile7;
-      function readFile7(path, options, cb) {
+      fs2.readFile = readFile9;
+      function readFile9(path, options, cb) {
         if (typeof options === "function")
           cb = options, options = null;
         return go$readFile(path, options, cb);
@@ -541,8 +541,8 @@ var require_graceful_fs = __commonJS({
         }
       }
       var fs$writeFile = fs2.writeFile;
-      fs2.writeFile = writeFile8;
-      function writeFile8(path, data, options, cb) {
+      fs2.writeFile = writeFile9;
+      function writeFile9(path, data, options, cb) {
         if (typeof options === "function")
           cb = options, options = null;
         return go$writeFile(path, data, options, cb);
@@ -559,8 +559,8 @@ var require_graceful_fs = __commonJS({
       }
       var fs$appendFile = fs2.appendFile;
       if (fs$appendFile)
-        fs2.appendFile = appendFile;
-      function appendFile(path, data, options, cb) {
+        fs2.appendFile = appendFile2;
+      function appendFile2(path, data, options, cb) {
         if (typeof options === "function")
           cb = options, options = null;
         return go$appendFile(path, data, options, cb);
@@ -596,9 +596,9 @@ var require_graceful_fs = __commonJS({
         }
       }
       var fs$readdir = fs2.readdir;
-      fs2.readdir = readdir;
+      fs2.readdir = readdir2;
       var noReaddirOptionVersions = /^v[0-5]\./;
-      function readdir(path, options, cb) {
+      function readdir2(path, options, cb) {
         if (typeof options === "function")
           cb = options, options = null;
         var go$readdir = noReaddirOptionVersions.test(process.version) ? function go$readdir2(path2, options2, cb2, startTime) {
@@ -701,7 +701,7 @@ var require_graceful_fs = __commonJS({
       }
       function ReadStream$open() {
         var that = this;
-        open4(that.path, that.flags, that.mode, function(err, fd) {
+        open5(that.path, that.flags, that.mode, function(err, fd) {
           if (err) {
             if (that.autoClose)
               that.destroy();
@@ -721,7 +721,7 @@ var require_graceful_fs = __commonJS({
       }
       function WriteStream$open() {
         var that = this;
-        open4(that.path, that.flags, that.mode, function(err, fd) {
+        open5(that.path, that.flags, that.mode, function(err, fd) {
           if (err) {
             that.destroy();
             that.emit("error", err);
@@ -738,8 +738,8 @@ var require_graceful_fs = __commonJS({
         return new fs2.WriteStream(path, options);
       }
       var fs$open = fs2.open;
-      fs2.open = open4;
-      function open4(path, flags, mode, cb) {
+      fs2.open = open5;
+      function open5(path, flags, mode, cb) {
         if (typeof mode === "function")
           cb = mode, mode = null;
         return go$open(path, flags, mode, cb);
@@ -1611,51 +1611,109 @@ var require_proper_lockfile = __commonJS({
 
 // dist/team/hooks/collect.mjs
 import { readFileSync } from "node:fs";
-import { mkdir as mkdir5, writeFile as writeFile7 } from "node:fs/promises";
-import { join as join8 } from "node:path";
-import { homedir } from "node:os";
+import { mkdir as mkdir5, writeFile as writeFile8 } from "node:fs/promises";
+import { join as join9 } from "node:path";
+import { homedir as homedir2 } from "node:os";
+
+// dist/team/lib/policy.mjs
+function defaultPolicy() {
+  const keepLists = {
+    "session.start": Object.freeze(["cwd_hash", "model", "permission_mode", "fancysauce.repo_url_hash"]),
+    "session.end": Object.freeze(["reason", "duration_wall_s"]),
+    "prompt.submit": Object.freeze(["prompt_length", "slash_command"]),
+    "tool_call.start": Object.freeze([
+      "tool_name",
+      "tool_input_hash",
+      "input_size_bytes",
+      "correlation_id",
+      "subsession_id",
+      "agent_type",
+      "skill_name"
+    ]),
+    "tool_call.complete": Object.freeze([
+      "tool_name",
+      "tool_input_hash",
+      "input_size_bytes",
+      "response_size_bytes",
+      "success",
+      "correlation_id",
+      "subsession_id",
+      "agent_type",
+      "skill_name"
+    ]),
+    "tool_call.failed": Object.freeze([
+      "tool_name",
+      "tool_input_hash",
+      "correlation_id",
+      "subsession_id",
+      "agent_type",
+      "skill_name"
+    ]),
+    "subagent.start": Object.freeze(["agent_id", "agent_type"]),
+    "subagent.complete": Object.freeze([
+      "agent_id",
+      "agent_type",
+      "duration_wall_s",
+      "last_assistant_message_size_bytes",
+      "last_assistant_message_hash"
+    ]),
+    "stop": Object.freeze([]),
+    "permission.request": Object.freeze([]),
+    "notification": Object.freeze(["notification_type"]),
+    "task.completed": Object.freeze(["task_id"]),
+    "compaction.before": Object.freeze([]),
+    "compaction.after": Object.freeze([]),
+    "config.changed": Object.freeze([]),
+    "api.request": Object.freeze([
+      "cost_usd",
+      "tokens_input",
+      "tokens_output",
+      "tokens_cache_read",
+      "tokens_cache_create",
+      "tokens_cache_create_5m",
+      "tokens_cache_create_1h",
+      "model",
+      "request_id",
+      "transcript_message_uuid",
+      "subsession_id",
+      "agent_type",
+      "stop_reason"
+    ])
+  };
+  return Object.freeze({
+    maxSerializedBytes: 4096,
+    keepLists: Object.freeze(keepLists)
+  });
+}
 
 // dist/team/lib/config.mjs
-function parseArgv(argv) {
-  const out = {};
-  for (let i = 0; i < argv.length; i++) {
-    const tok = argv[i];
-    if (tok === "--api-key" && i + 1 < argv.length) {
-      out.apiKey = argv[++i];
-    } else if (tok.startsWith("--api-key=")) {
-      out.apiKey = tok.slice("--api-key=".length);
-    } else if (tok === "--endpoint" && i + 1 < argv.length) {
-      out.endpoint = argv[++i];
-    } else if (tok.startsWith("--endpoint=")) {
-      out.endpoint = tok.slice("--endpoint=".length);
+var INGEST_ENDPOINT = "https://ingest.preview.fancysauce.ai";
+var KNOWN_FANCYSAUCE_VARS = /* @__PURE__ */ new Set([
+  "FANCYSAUCE_API_KEY"
+]);
+function loadConfig(opts = {}) {
+  const apiKey = process.env.FANCYSAUCE_API_KEY;
+  if (!apiKey)
+    return null;
+  const onUnknown = opts.onUnknownEnvVar ?? defaultUnknownEnvVarHandler;
+  for (const [name, value] of Object.entries(process.env)) {
+    if (name.startsWith("FANCYSAUCE_") && !KNOWN_FANCYSAUCE_VARS.has(name)) {
+      onUnknown(name, value ?? "");
     }
   }
-  return out;
-}
-function loadConfig(opts = {}) {
-  const fromArgv = parseArgv(opts.argv ?? process.argv);
-  const apiKey = fromArgv.apiKey ?? process.env.FANCYSAUCE_API_KEY;
-  const endpoint = fromArgv.endpoint ?? process.env.FANCYSAUCE_ENDPOINT;
-  if (!apiKey || !endpoint)
-    return null;
-  if (!endpoint.startsWith("https://")) {
-    if (process.env.FANCYSAUCE_ALLOW_INSECURE_ENDPOINT !== "true")
-      return null;
-  }
-  const team = process.env.FANCYSAUCE_TEAM || void 0;
-  const disclosure = process.env.FANCYSAUCE_DISCLOSURE_NOTIFICATION === "enabled";
-  const shipRepoUrl = process.env.FANCYSAUCE_SHIP_REPO_URL === "true";
-  const importHistory = process.env.FANCYSAUCE_IMPORT_HISTORY === "enabled";
-  const importSince = process.env.FANCYSAUCE_IMPORT_HISTORY_SINCE || void 0;
   return {
     apiKey,
-    endpoint,
-    team,
-    disclosure,
-    shipRepoUrl,
-    importHistory,
-    importSince
+    endpoint: INGEST_ENDPOINT,
+    policy: defaultPolicy()
   };
+}
+function defaultUnknownEnvVarHandler(_name, _value) {
+}
+
+// dist/team/lib/hash.mjs
+import { createHash } from "node:crypto";
+function sha256Hex(input) {
+  return createHash("sha256").update(input, "utf8").digest("hex");
 }
 
 // dist/team/lib/stable-stringify.mjs
@@ -1697,6 +1755,9 @@ function mapHookToEvent(input, sequence) {
   if (!eventType) {
     throw new Error(`Unknown hook_event_name: ${String(input.hook_event_name)}`);
   }
+  if (input.hook_event_name === "SubagentStop" && input.agent_type === "") {
+    return null;
+  }
   const attributes = {};
   if (TOOL_HOOKS.has(input.hook_event_name)) {
     if (input.tool_name)
@@ -1704,14 +1765,26 @@ function mapHookToEvent(input, sequence) {
     if (input.tool_input !== void 0) {
       attributes.tool_input_raw = stableStringify(input.tool_input);
     }
+    if (input.tool_name === "Skill" && input.tool_input !== void 0) {
+      const inp = input.tool_input;
+      if (typeof inp.skill === "string")
+        attributes.skill_name = inp.skill;
+    }
     if (input.tool_response !== void 0) {
       attributes.tool_response_raw = stableStringify(input.tool_response);
     }
     if (input.tool_use_id)
       attributes.correlation_id = input.tool_use_id;
+    if (input.agent_id)
+      attributes.subsession_id = input.agent_id;
+    if (input.agent_type)
+      attributes.agent_type = input.agent_type;
+    if (input.hook_event_name === "PostToolUse") {
+      attributes.success = true;
+    }
   } else {
     if (input.cwd)
-      attributes.cwd = input.cwd;
+      attributes.cwd_hash = sha256Hex(input.cwd);
     if (input.permission_mode)
       attributes.permission_mode = input.permission_mode;
     if (input.model)
@@ -1720,6 +1793,10 @@ function mapHookToEvent(input, sequence) {
       attributes.agent_id = input.agent_id;
     if (input.agent_type)
       attributes.agent_type = input.agent_type;
+    if (input.last_assistant_message) {
+      attributes.last_assistant_message_size_bytes = Buffer.byteLength(input.last_assistant_message, "utf8");
+      attributes.last_assistant_message_hash = sha256Hex(input.last_assistant_message);
+    }
     if (input.notification_type)
       attributes.notification_type = input.notification_type;
     if (input.task_id)
@@ -1729,6 +1806,13 @@ function mapHookToEvent(input, sequence) {
     if (input.hook_event_name === "UserPromptSubmit") {
       const prompt = typeof input.prompt === "string" ? input.prompt : "";
       attributes.prompt_length = Buffer.byteLength(prompt, "utf8");
+      const trimmed = prompt.trimStart();
+      if (trimmed.startsWith("/")) {
+        const firstToken = trimmed.slice(1).split(/\s/, 1)[0] ?? "";
+        if (/^[A-Za-z0-9_:-]{1,64}$/.test(firstToken)) {
+          attributes.slash_command = firstToken;
+        }
+      }
     }
   }
   return {
@@ -1744,37 +1828,37 @@ function mapHookToEvent(input, sequence) {
 }
 
 // dist/team/lib/content-filter.mjs
-import { createHash, randomUUID } from "node:crypto";
-var MAX_SERIALIZED_BYTES = 4096;
-var rules = {
-  "session.start": keep(["cwd", "model", "permission_mode", "fancysauce.repo_url_hash"]),
-  "session.end": keep(["reason", "duration_wall_s"]),
-  "prompt.submit": (a) => ({ prompt_length: numericOr(a.prompt_length, 0) }),
-  "tool_call.start": toolCallStart,
-  "tool_call.complete": toolCallComplete,
-  "tool_call.failed": toolCallFailed,
-  "subagent.start": keep(["agent_id", "agent_type"]),
-  "subagent.complete": keep(["agent_id", "agent_type", "duration_wall_s"]),
-  "stop": () => ({}),
-  "permission.request": () => ({}),
-  "notification": keep(["notification_type"]),
-  "task.completed": keep(["task_id"]),
-  "compaction.before": () => ({}),
-  "compaction.after": () => ({}),
-  "config.changed": () => ({}),
-  "api.request": keep([
-    "cost_usd",
-    "tokens_input",
-    "tokens_output",
-    "tokens_cache_read",
-    "tokens_cache_create",
-    "tokens_cache_create_5m",
-    "tokens_cache_create_1h",
-    "model",
-    "request_id",
-    "transcript_message_uuid"
-  ])
-};
+import { randomUUID } from "node:crypto";
+function buildRules(policy) {
+  const k = (eventType) => keep(policy.keepLists[eventType]);
+  return {
+    "session.start": k("session.start"),
+    "session.end": k("session.end"),
+    "prompt.submit": promptSubmit,
+    "tool_call.start": toolCallStart,
+    "tool_call.complete": toolCallComplete,
+    "tool_call.failed": toolCallFailed,
+    "subagent.start": k("subagent.start"),
+    "subagent.complete": k("subagent.complete"),
+    "stop": k("stop"),
+    "permission.request": k("permission.request"),
+    "notification": k("notification"),
+    "task.completed": k("task.completed"),
+    "compaction.before": k("compaction.before"),
+    "compaction.after": k("compaction.after"),
+    "config.changed": k("config.changed"),
+    "api.request": k("api.request")
+  };
+}
+function promptSubmit(a) {
+  const out = {
+    prompt_length: numericOr(a.prompt_length, 0)
+  };
+  if (typeof a.slash_command === "string" && a.slash_command) {
+    out.slash_command = a.slash_command;
+  }
+  return out;
+}
 function keep(names) {
   const set = new Set(names);
   return (attrs) => {
@@ -1788,36 +1872,47 @@ function keep(names) {
 }
 function toolCallStart(a) {
   const rawInput = typeof a.tool_input_raw === "string" ? a.tool_input_raw : "";
-  return {
+  const out = stripUndefined({
     tool_name: asString(a.tool_name),
     tool_input_hash: sha256Hex(rawInput),
     input_size_bytes: Buffer.byteLength(rawInput, "utf8"),
-    correlation_id: asString(a.correlation_id)
-  };
+    correlation_id: asString(a.correlation_id),
+    subsession_id: a.subsession_id,
+    agent_type: a.agent_type
+  });
+  if (typeof a.skill_name === "string" && a.skill_name)
+    out.skill_name = a.skill_name;
+  return out;
 }
 function toolCallComplete(a) {
   const rawInput = typeof a.tool_input_raw === "string" ? a.tool_input_raw : "";
   const rawResponse = typeof a.tool_response_raw === "string" ? a.tool_response_raw : "";
-  return {
+  const out = stripUndefined({
     tool_name: asString(a.tool_name),
     tool_input_hash: sha256Hex(rawInput),
     input_size_bytes: Buffer.byteLength(rawInput, "utf8"),
     response_size_bytes: Buffer.byteLength(rawResponse, "utf8"),
-    duration_ms: numericOr(a.duration_ms, 0),
     success: a.success === true,
-    correlation_id: asString(a.correlation_id)
-  };
+    correlation_id: asString(a.correlation_id),
+    subsession_id: a.subsession_id,
+    agent_type: a.agent_type
+  });
+  if (typeof a.skill_name === "string" && a.skill_name)
+    out.skill_name = a.skill_name;
+  return out;
 }
 function toolCallFailed(a) {
   const rawInput = typeof a.tool_input_raw === "string" ? a.tool_input_raw : "";
-  return {
+  const out = stripUndefined({
     tool_name: asString(a.tool_name),
     tool_input_hash: sha256Hex(rawInput),
-    correlation_id: asString(a.correlation_id)
-  };
-}
-function sha256Hex(input) {
-  return createHash("sha256").update(input, "utf8").digest("hex");
+    correlation_id: asString(a.correlation_id),
+    subsession_id: a.subsession_id,
+    agent_type: a.agent_type
+  });
+  if (typeof a.skill_name === "string" && a.skill_name)
+    out.skill_name = a.skill_name;
+  return out;
 }
 function asString(v) {
   return typeof v === "string" ? v : "";
@@ -1825,7 +1920,24 @@ function asString(v) {
 function numericOr(v, fallback) {
   return typeof v === "number" ? v : fallback;
 }
-function filterEvent(raw) {
+function stripUndefined(o) {
+  const out = {};
+  for (const [k, v] of Object.entries(o))
+    if (v !== void 0)
+      out[k] = v;
+  return out;
+}
+var rulesCache = /* @__PURE__ */ new WeakMap();
+function getRules(policy) {
+  let rules = rulesCache.get(policy);
+  if (!rules) {
+    rules = buildRules(policy);
+    rulesCache.set(policy, rules);
+  }
+  return rules;
+}
+function filterEvent(raw, policy) {
+  const rules = getRules(policy);
   const rule = rules[raw.event_type];
   if (!rule) {
     throw new Error(`No content-filter rule for event_type: ${raw.event_type}`);
@@ -1843,32 +1955,214 @@ function filterEvent(raw) {
     ts: out.timestamp_ns.toString(),
     attrs: out.attributes
   });
-  if (Buffer.byteLength(serialized, "utf8") > MAX_SERIALIZED_BYTES) {
+  if (Buffer.byteLength(serialized, "utf8") > policy.maxSerializedBytes) {
     return null;
   }
   return out;
 }
 
 // dist/team/lib/transcript-tail.mjs
-var import_proper_lockfile = __toESM(require_proper_lockfile(), 1);
-import { open, mkdir, readFile, writeFile, rename } from "node:fs/promises";
-import { join } from "node:path";
+var import_proper_lockfile2 = __toESM(require_proper_lockfile(), 1);
+import { open as open2, mkdir as mkdir2, readFile as readFile3, readdir, writeFile as writeFile2, appendFile, rename as rename2 } from "node:fs/promises";
+import { basename, dirname, isAbsolute, join as join2, sep } from "node:path";
+import { homedir } from "node:os";
 import { randomUUID as randomUUID2 } from "node:crypto";
+
+// dist/team/lib/subagent-cursor.mjs
+import { readFile, rename, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+
+// dist/team/lib/locking.mjs
+var import_proper_lockfile = __toESM(require_proper_lockfile(), 1);
+import { mkdir } from "node:fs/promises";
+var LOCK_OPTIONS = {
+  realpath: false,
+  retries: { retries: 100, minTimeout: 5, maxTimeout: 100, factor: 1.5 },
+  stale: 1e4
+};
+async function withDirLock(dir, fn) {
+  await mkdir(dir, { recursive: true });
+  const release = await import_proper_lockfile.default.lock(dir, LOCK_OPTIONS);
+  try {
+    return await fn();
+  } finally {
+    await release();
+  }
+}
+
+// dist/team/lib/subagent-cursor.mjs
+var SubagentCursor = class {
+  dir;
+  path;
+  tmpPath;
+  constructor(dir) {
+    this.dir = dir;
+    this.path = join(dir, "transcript_cursor.json");
+    this.tmpPath = `${this.path}.tmp`;
+  }
+  async read() {
+    try {
+      const buf = await readFile(this.path, "utf8");
+      const parsed = JSON.parse(buf);
+      return parsed.byte_offset ?? 0;
+    } catch (err) {
+      if (err.code === "ENOENT")
+        return 0;
+      throw err;
+    }
+  }
+  async advance(offset) {
+    await withDirLock(this.dir, async () => {
+      const current = await this.read();
+      if (offset < current) {
+        throw new Error(`SubagentCursor.advance monotonic violation: ${offset} < ${current}`);
+      }
+      await this.write(offset);
+    });
+  }
+  // Force-write cursor to 0. Bypasses the monotonic guard. Used when the
+  // transcript file shrank below the recorded offset (CC compaction,
+  // manual prune, agent_id collision across sessions): without a reset,
+  // every subsequent tail would see `stat.size <= cursor` and emit
+  // nothing, permanently locking the agent's events out.
+  async reset() {
+    await withDirLock(this.dir, async () => {
+      await this.write(0);
+    });
+  }
+  async write(offset) {
+    const body = { byte_offset: offset };
+    await writeFile(this.tmpPath, JSON.stringify(body), "utf8");
+    await rename(this.tmpPath, this.path);
+  }
+};
+
+// dist/team/lib/subagent-meta.mjs
+import { open, readFile as readFile2 } from "node:fs/promises";
+function metaPathFromTranscript(transcriptPath) {
+  return transcriptPath.endsWith(".jsonl") ? `${transcriptPath.slice(0, -".jsonl".length)}.meta.json` : `${transcriptPath}.meta.json`;
+}
+async function enrichSubagentComplete(event, transcriptPath) {
+  if (event.event_type !== "subagent.complete")
+    return event;
+  if (typeof transcriptPath !== "string" || transcriptPath.length === 0)
+    return event;
+  const dur = await computeSubagentDuration(transcriptPath);
+  if (dur === null)
+    return event;
+  return {
+    ...event,
+    attributes: { ...event.attributes, duration_wall_s: dur }
+  };
+}
+async function computeSubagentDuration(transcriptPath) {
+  let fh = null;
+  try {
+    fh = await open(transcriptPath, "r");
+    const stat2 = await fh.stat();
+    if (stat2.size === 0)
+      return null;
+    const headSize = Math.min(stat2.size, READ_WINDOW_BYTES);
+    const headBuf = Buffer.alloc(headSize);
+    await fh.read(headBuf, 0, headSize, 0);
+    const firstNewline = headBuf.indexOf("\n".charCodeAt(0));
+    if (firstNewline < 0)
+      return null;
+    const firstLine = headBuf.slice(0, firstNewline).toString("utf8");
+    const tailSize = Math.min(stat2.size, READ_WINDOW_BYTES);
+    const tailStart = stat2.size - tailSize;
+    const tailBuf = Buffer.alloc(tailSize);
+    await fh.read(tailBuf, 0, tailSize, tailStart);
+    let usableEnd = tailBuf.length;
+    if (usableEnd > 0 && tailBuf[usableEnd - 1] === "\n".charCodeAt(0))
+      usableEnd--;
+    if (usableEnd <= 0)
+      return null;
+    const lastNewline = tailBuf.lastIndexOf("\n".charCodeAt(0), usableEnd - 1);
+    if (lastNewline < 0)
+      return null;
+    const lastLine = tailBuf.slice(lastNewline + 1, usableEnd).toString("utf8");
+    const firstTs = parseTimestamp(firstLine);
+    const lastTs = parseTimestamp(lastLine);
+    if (firstTs === null || lastTs === null)
+      return null;
+    return Math.max(0, Math.round((lastTs - firstTs) / 1e3));
+  } catch (err) {
+    if (err?.code === "ENOENT")
+      return null;
+    throw err;
+  } finally {
+    if (fh)
+      await fh.close();
+  }
+}
+var READ_WINDOW_BYTES = 256 * 1024;
+function parseTimestamp(line) {
+  let rec;
+  try {
+    rec = JSON.parse(line);
+  } catch {
+    return null;
+  }
+  if (typeof rec !== "object" || rec === null)
+    return null;
+  const ts = rec.timestamp;
+  if (typeof ts !== "string")
+    return null;
+  const ms = Date.parse(ts);
+  return Number.isFinite(ms) ? ms : null;
+}
+var SubagentMetaCache = class {
+  cache = /* @__PURE__ */ new Map();
+  async get(path) {
+    if (this.cache.has(path))
+      return this.cache.get(path) ?? null;
+    let meta = null;
+    try {
+      const raw = await readFile2(path, "utf8");
+      const parsed = JSON.parse(raw);
+      if (typeof parsed.agentType === "string") {
+        meta = { agentType: parsed.agentType };
+      }
+    } catch {
+      meta = null;
+    }
+    this.cache.set(path, meta);
+    return meta;
+  }
+};
+
+// dist/team/lib/transcript-tail.mjs
+var SESSION_ID_RE = /^[A-Za-z0-9_-]{16,128}$/;
 var DEFAULT_MAX_READ_BYTES = 4 * 1024 * 1024;
 var TranscriptTail = class {
   stateDir;
   maxReadBytes;
+  errorLogPath;
+  transcriptRoot;
   constructor(stateDir, options = {}) {
     this.stateDir = stateDir;
     this.maxReadBytes = options.maxReadBytes ?? DEFAULT_MAX_READ_BYTES;
+    this.errorLogPath = options.errorLogPath;
+    const root = options.transcriptRoot ?? join2(homedir(), ".claude", "projects");
+    this.transcriptRoot = root.endsWith(sep) ? root : root + sep;
   }
-  async tail(sessionId, transcriptPath, sequenceBase) {
+  // `persist` runs after all events are read but BEFORE any cursor is
+  // advanced. If it throws, every cursor stays at its previous offset and
+  // the next tail() re-reads the same window — at-least-once delivery.
+  // The parent cursor lock is held across read + persist + cursor writes,
+  // so concurrent hooks cannot double-emit the same window.
+  async tail(sessionId, transcriptPath, sequenceBase, persist) {
+    if (!isValidSessionId(sessionId) || !this.isValidTranscriptPath(transcriptPath)) {
+      await persist([]);
+      return { events: [], skipped: true, newCursor: 0 };
+    }
     const cursorDir = this.cursorDir(sessionId);
-    await mkdir(cursorDir, { recursive: true });
-    const cursorPath = join(cursorDir, "transcript_cursor.json");
+    await mkdir2(cursorDir, { recursive: true });
+    const cursorPath = join2(cursorDir, "transcript_cursor.json");
     let release;
     try {
-      release = await import_proper_lockfile.default.lock(cursorPath, {
+      release = await import_proper_lockfile2.default.lock(cursorPath, {
         retries: 0,
         realpath: false
       });
@@ -1877,9 +2171,42 @@ var TranscriptTail = class {
     }
     try {
       const startOffset = await this.readCursor(cursorPath);
-      const { events, endOffset } = await this.readSince(sessionId, transcriptPath, startOffset, sequenceBase, this.maxReadBytes);
-      if (endOffset > startOffset) {
+      const { events, endOffset, truncated } = await this.readSince(sessionId, transcriptPath, startOffset, sequenceBase, this.maxReadBytes);
+      const sessionDir = join2(dirname(transcriptPath), basename(transcriptPath, ".jsonl"));
+      const subagentPaths = await discoverSubagentTranscripts(sessionDir);
+      const metaCache = new SubagentMetaCache();
+      let seq = sequenceBase + events.length;
+      const subagentCommits = [];
+      for (const subagentPath of subagentPaths) {
+        const agentId = basename(subagentPath, ".jsonl").slice("agent-".length);
+        const metaPath = metaPathFromTranscript(subagentPath);
+        const subCursorDir = join2(this.cursorDir(sessionId), "subagents", agentId);
+        let read;
+        try {
+          read = await readSubagent({
+            sessionId,
+            agentId,
+            transcriptPath: subagentPath,
+            metaPath,
+            cursorDir: subCursorDir,
+            metaCache,
+            sequenceBase: seq,
+            maxReadBytes: this.maxReadBytes
+          });
+        } catch (err) {
+          await this.logSubagentError(sessionId, agentId, err);
+          continue;
+        }
+        events.push(...read.events);
+        seq += read.events.length;
+        subagentCommits.push(read.commit);
+      }
+      await persist(events);
+      if (truncated || endOffset > startOffset) {
         await this.writeCursor(cursorPath, endOffset);
+      }
+      for (const commit of subagentCommits) {
+        await commit();
       }
       return { events, skipped: false, newCursor: endOffset };
     } finally {
@@ -1887,25 +2214,50 @@ var TranscriptTail = class {
     }
   }
   async acquireCursorLock(sessionId) {
-    const cursorDir = this.cursorDir(sessionId);
-    await mkdir(cursorDir, { recursive: true });
-    const cursorPath = join(cursorDir, "transcript_cursor.json");
-    try {
-      await readFile(cursorPath);
-    } catch {
-      await writeFile(cursorPath, "{}", "utf8");
+    if (!isValidSessionId(sessionId)) {
+      throw new Error(`acquireCursorLock: invalid sessionId`);
     }
-    const release = await import_proper_lockfile.default.lock(cursorPath, { retries: 0, realpath: false });
+    const cursorDir = this.cursorDir(sessionId);
+    await mkdir2(cursorDir, { recursive: true });
+    const cursorPath = join2(cursorDir, "transcript_cursor.json");
+    try {
+      await readFile3(cursorPath);
+    } catch {
+      await writeFile2(cursorPath, "{}", "utf8");
+    }
+    const release = await import_proper_lockfile2.default.lock(cursorPath, { retries: 0, realpath: false });
     return { release: async () => {
       await release();
     } };
   }
   cursorDir(sessionId) {
-    return join(this.stateDir, "sessions", sessionId);
+    return join2(this.stateDir, "sessions", sessionId);
+  }
+  isValidTranscriptPath(p) {
+    if (typeof p !== "string" || p.length === 0)
+      return false;
+    if (!isAbsolute(p))
+      return false;
+    if (!p.endsWith(".jsonl"))
+      return false;
+    if (!p.startsWith(this.transcriptRoot))
+      return false;
+    return true;
+  }
+  async logSubagentError(sessionId, agentId, err) {
+    if (!this.errorLogPath)
+      return;
+    const msg = err instanceof Error ? `${err.message}` : String(err);
+    const line = `${(/* @__PURE__ */ new Date()).toISOString()} subagent-tail ${sessionId}/${agentId}: ${msg}
+`;
+    try {
+      await appendFile(this.errorLogPath, line);
+    } catch {
+    }
   }
   async readCursor(cursorPath) {
     try {
-      const buf = await readFile(cursorPath, "utf8");
+      const buf = await readFile3(cursorPath, "utf8");
       const parsed = JSON.parse(buf);
       return parsed.byte_offset ?? 0;
     } catch {
@@ -1915,47 +2267,124 @@ var TranscriptTail = class {
   async writeCursor(cursorPath, offset) {
     const body = { byte_offset: offset };
     const tmp = `${cursorPath}.tmp`;
-    await writeFile(tmp, JSON.stringify(body), "utf8");
-    await rename(tmp, cursorPath);
+    await writeFile2(tmp, JSON.stringify(body), "utf8");
+    await rename2(tmp, cursorPath);
   }
   async readSince(sessionId, path, startOffset, sequenceBase, maxReadBytes) {
-    let fh = null;
-    try {
-      fh = await open(path, "r");
-      const stat2 = await fh.stat();
-      if (stat2.size <= startOffset)
-        return { events: [], endOffset: startOffset };
-      const toRead = Math.min(stat2.size - startOffset, maxReadBytes);
-      const buf = Buffer.alloc(toRead);
-      await fh.read(buf, 0, toRead, startOffset);
-      const lastNewline = buf.lastIndexOf("\n".charCodeAt(0));
-      if (lastNewline < 0)
-        return { events: [], endOffset: startOffset };
-      const usable = buf.slice(0, lastNewline + 1).toString("utf8");
-      const endOffset = startOffset + lastNewline + 1;
-      const events = [];
-      let seq = sequenceBase;
-      for (const line of usable.split("\n")) {
-        if (!line)
-          continue;
-        let rec;
-        try {
-          rec = JSON.parse(line);
-        } catch {
-          continue;
-        }
-        if (!isAssistantRecord(rec))
-          continue;
-        events.push(toApiRequestEvent(rec, sessionId, seq));
-        seq++;
-      }
-      return { events, endOffset };
-    } finally {
-      if (fh)
-        await fh.close();
-    }
+    return readApiRequestEvents({
+      path,
+      startOffset,
+      sequenceBase,
+      maxReadBytes,
+      stamp: (r, seq) => toApiRequestEvent(r, sessionId, seq)
+    });
   }
 };
+async function readApiRequestEvents(opts) {
+  const { path, startOffset, sequenceBase, maxReadBytes, stamp } = opts;
+  let fh = null;
+  try {
+    try {
+      fh = await open2(path, "r");
+    } catch (err) {
+      if (err.code === "ENOENT") {
+        return { events: [], endOffset: startOffset, truncated: false };
+      }
+      throw err;
+    }
+    const stat2 = await fh.stat();
+    const truncated = stat2.size < startOffset;
+    const effectiveStart = truncated ? 0 : startOffset;
+    if (stat2.size <= effectiveStart) {
+      return { events: [], endOffset: effectiveStart, truncated };
+    }
+    const toRead = Math.min(stat2.size - effectiveStart, maxReadBytes);
+    const buf = Buffer.alloc(toRead);
+    await fh.read(buf, 0, toRead, effectiveStart);
+    const lastNewline = buf.lastIndexOf("\n".charCodeAt(0));
+    if (lastNewline < 0)
+      return { events: [], endOffset: effectiveStart, truncated };
+    const usable = buf.slice(0, lastNewline + 1).toString("utf8");
+    const endOffset = effectiveStart + lastNewline + 1;
+    const events = [];
+    let seq = sequenceBase;
+    for (const line of usable.split("\n")) {
+      if (!line)
+        continue;
+      let rec;
+      try {
+        rec = JSON.parse(line);
+      } catch {
+        continue;
+      }
+      if (!isAssistantRecord(rec))
+        continue;
+      events.push(stamp(rec, seq));
+      seq++;
+    }
+    return { events, endOffset, truncated };
+  } finally {
+    if (fh)
+      await fh.close();
+  }
+}
+async function readSubagent(opts) {
+  const { sessionId, agentId, transcriptPath, metaPath, cursorDir, metaCache = new SubagentMetaCache(), sequenceBase = 0, maxReadBytes = DEFAULT_MAX_READ_BYTES } = opts;
+  await mkdir2(cursorDir, { recursive: true });
+  const cursor = new SubagentCursor(cursorDir);
+  const startOffset = await cursor.read();
+  const meta = await metaCache.get(metaPath);
+  let events;
+  let endOffset;
+  let truncated;
+  try {
+    ({ events, endOffset, truncated } = await readApiRequestEvents({
+      path: transcriptPath,
+      startOffset,
+      sequenceBase,
+      maxReadBytes,
+      stamp: (record, seq) => {
+        const base = toApiRequestEvent(record, sessionId, seq);
+        const attributes = {
+          ...base.attributes,
+          subsession_id: agentId
+        };
+        if (meta)
+          attributes.agent_type = meta.agentType;
+        return { ...base, attributes };
+      }
+    }));
+  } catch (err) {
+    if (err?.code === "ENOENT") {
+      return { events: [], commit: async () => {
+      } };
+    }
+    throw err;
+  }
+  return {
+    events,
+    commit: async () => {
+      if (truncated)
+        await cursor.reset();
+      const current = await cursor.read();
+      if (endOffset > current)
+        await cursor.advance(endOffset);
+    }
+  };
+}
+async function discoverSubagentTranscripts(sessionDir) {
+  const subDir = join2(sessionDir, "subagents");
+  let entries;
+  try {
+    entries = await readdir(subDir);
+  } catch {
+    return [];
+  }
+  return entries.filter((e) => e.startsWith("agent-") && e.endsWith(".jsonl")).map((e) => join2(subDir, e));
+}
+function isValidSessionId(s) {
+  return typeof s === "string" && SESSION_ID_RE.test(s);
+}
 function isAssistantRecord(r) {
   if (typeof r !== "object" || r === null)
     return false;
@@ -1996,6 +2425,9 @@ function toApiRequestEvent(r, sessionId, sequence) {
     request_id: r.requestId ?? r.message.id,
     transcript_message_uuid: r.uuid
   };
+  if (typeof r.message.stop_reason === "string" && r.message.stop_reason) {
+    attrs.stop_reason = r.message.stop_reason;
+  }
   return {
     event_uuid: randomUUID2(),
     event_type: "api.request",
@@ -2009,29 +2441,9 @@ function toApiRequestEvent(r, sessionId, sequence) {
 
 // dist/team/lib/identity-resolver.mjs
 import { createHash as createHash2, randomUUID as randomUUID3 } from "node:crypto";
-import { exec } from "node:child_process";
-import { readFile as readFile2, writeFile as writeFile2 } from "node:fs/promises";
-import { join as join2 } from "node:path";
-
-// dist/team/lib/locking.mjs
-var import_proper_lockfile2 = __toESM(require_proper_lockfile(), 1);
-import { mkdir as mkdir2 } from "node:fs/promises";
-var LOCK_OPTIONS = {
-  realpath: false,
-  retries: { retries: 100, minTimeout: 5, maxTimeout: 100, factor: 1.5 },
-  stale: 1e4
-};
-async function withDirLock(dir, fn) {
-  await mkdir2(dir, { recursive: true });
-  const release = await import_proper_lockfile2.default.lock(dir, LOCK_OPTIONS);
-  try {
-    return await fn();
-  } finally {
-    await release();
-  }
-}
-
-// dist/team/lib/identity-resolver.mjs
+import { execFile } from "node:child_process";
+import { readFile as readFile4, writeFile as writeFile3 } from "node:fs/promises";
+import { join as join3 } from "node:path";
 var GIT_TIMEOUT_MS = 200;
 var IdentityResolver = class {
   dir;
@@ -2039,23 +2451,13 @@ var IdentityResolver = class {
   git;
   constructor(dir, git = defaultGitAccess()) {
     this.dir = dir;
-    this.installPath = join2(dir, "install.json");
+    this.installPath = join3(dir, "install.json");
     this.git = git;
   }
   async resolve(cwd) {
     const install_id = await this.loadOrCreateInstallId();
-    const globalEmail = await this.git.gitGlobalEmail();
-    if (globalEmail) {
-      const repo2 = await this.resolveRepoHash(cwd);
-      return { install_id, subject: globalEmail, subject_source: "git-global", ...repo2 };
-    }
-    const localEmail = await this.git.gitLocalEmail(cwd);
-    if (localEmail) {
-      const repo2 = await this.resolveRepoHash(cwd);
-      return { install_id, subject: localEmail, subject_source: "git-local", ...repo2 };
-    }
     const repo = await this.resolveRepoHash(cwd);
-    return { install_id, subject: "unidentified", subject_source: "unidentified", ...repo };
+    return { install_id, ...repo };
   }
   async resolveRepoHash(cwd) {
     const url = await this.git.gitRemoteUrl(cwd);
@@ -2066,7 +2468,7 @@ var IdentityResolver = class {
   async loadOrCreateInstallId() {
     return withDirLock(this.dir, async () => {
       try {
-        const buf = await readFile2(this.installPath, "utf8");
+        const buf = await readFile4(this.installPath, "utf8");
         const parsed = JSON.parse(buf);
         if (parsed.install_id)
           return parsed.install_id;
@@ -2076,7 +2478,7 @@ var IdentityResolver = class {
       }
       const install_id = randomUUID3();
       const body = { install_id, created_at: (/* @__PURE__ */ new Date()).toISOString() };
-      await writeFile2(this.installPath, JSON.stringify(body), "utf8");
+      await writeFile3(this.installPath, JSON.stringify(body), "utf8");
       return install_id;
     });
   }
@@ -2086,22 +2488,17 @@ function toResourceAttributes(id, opts) {
     "service.name": "fancysauce",
     "service.version": opts.pluginVersion,
     "fancysauce.schema_version": opts.schemaVersion,
-    "fancysauce.install_id": id.install_id,
-    "fancysauce.subject": id.subject,
-    "fancysauce.subject_source": id.subject_source,
-    ...opts.team ? { "fancysauce.team": opts.team } : {}
+    "fancysauce.install_id": id.install_id
   };
 }
 function defaultGitAccess() {
   return {
-    gitGlobalEmail: () => gitRead("git config --global user.email"),
-    gitLocalEmail: (cwd) => gitRead(`git -C ${shellEscape(cwd)} config user.email`),
-    gitRemoteUrl: (cwd) => gitRead(`git -C ${shellEscape(cwd)} remote get-url origin`)
+    gitRemoteUrl: (cwd) => gitRead(["-C", cwd, "remote", "get-url", "origin"])
   };
 }
-function gitRead(cmd) {
+function gitRead(args) {
   return new Promise((resolve) => {
-    exec(cmd, { timeout: GIT_TIMEOUT_MS }, (err, stdout) => {
+    execFile("git", args, { timeout: GIT_TIMEOUT_MS }, (err, stdout) => {
       if (err)
         return resolve(null);
       const trimmed = stdout.toString().trim();
@@ -2109,20 +2506,17 @@ function gitRead(cmd) {
     });
   });
 }
-function shellEscape(s) {
-  return `'${s.replace(/'/g, `'"'"'`)}'`;
-}
 
 // dist/team/lib/queue.mjs
-import { open as open2, stat } from "node:fs/promises";
-import { join as join3 } from "node:path";
+import { open as open3, stat } from "node:fs/promises";
+import { join as join4 } from "node:path";
 var Queue = class {
   dir;
   path;
   capBytes;
   constructor(dir, capBytes) {
     this.dir = dir;
-    this.path = join3(dir, "queue.ndjson");
+    this.path = join4(dir, "queue.ndjson");
     this.capBytes = capBytes;
   }
   async size() {
@@ -2140,7 +2534,7 @@ var Queue = class {
       return { written: 0, dropped: 0, sizeAfter: await this.size() };
     }
     return withDirLock(this.dir, async () => {
-      const fh = await open2(this.path, "a");
+      const fh = await open3(this.path, "a");
       let written = 0;
       let dropped = 0;
       let currentSize = (await fh.stat()).size;
@@ -2165,8 +2559,8 @@ var Queue = class {
 
 // dist/team/lib/health.mjs
 var import_proper_lockfile3 = __toESM(require_proper_lockfile(), 1);
-import { mkdir as mkdir3, readFile as readFile3, rename as rename2, writeFile as writeFile3 } from "node:fs/promises";
-import { join as join4 } from "node:path";
+import { mkdir as mkdir3, readFile as readFile5, rename as rename3, writeFile as writeFile4 } from "node:fs/promises";
+import { join as join5 } from "node:path";
 var DEFAULT = { dropped_event_count: 0 };
 var LOCK_RETRIES = {
   retries: 100,
@@ -2180,12 +2574,12 @@ var HealthState = class {
   tmp;
   constructor(dir) {
     this.dir = dir;
-    this.path = join4(dir, "health.json");
+    this.path = join5(dir, "health.json");
     this.tmp = `${this.path}.tmp`;
   }
   async read() {
     try {
-      return { ...DEFAULT, ...JSON.parse(await readFile3(this.path, "utf8")) };
+      return { ...DEFAULT, ...JSON.parse(await readFile5(this.path, "utf8")) };
     } catch {
       return { ...DEFAULT };
     }
@@ -2209,9 +2603,9 @@ var HealthState = class {
   async update(mutate) {
     await mkdir3(this.dir, { recursive: true });
     try {
-      await readFile3(this.path);
+      await readFile5(this.path);
     } catch {
-      await writeFile3(this.path, "{}", "utf8");
+      await writeFile4(this.path, "{}", "utf8");
     }
     const release = await import_proper_lockfile3.default.lock(this.path, {
       retries: LOCK_RETRIES,
@@ -2220,8 +2614,8 @@ var HealthState = class {
     try {
       const h = await this.read();
       mutate(h);
-      await writeFile3(this.tmp, JSON.stringify(h), "utf8");
-      await rename2(this.tmp, this.path);
+      await writeFile4(this.tmp, JSON.stringify(h), "utf8");
+      await rename3(this.tmp, this.path);
     } finally {
       await release();
     }
@@ -2230,24 +2624,24 @@ var HealthState = class {
 
 // dist/team/lib/flusher.mjs
 var import_proper_lockfile4 = __toESM(require_proper_lockfile(), 1);
-import { open as open3, readFile as readFile6, rename as rename5, writeFile as writeFile6 } from "node:fs/promises";
-import { join as join7 } from "node:path";
+import { open as open4, readFile as readFile8, rename as rename6, writeFile as writeFile7 } from "node:fs/promises";
+import { join as join8 } from "node:path";
 
 // dist/team/lib/flush-cursor.mjs
-import { readFile as readFile4, rename as rename3, writeFile as writeFile4 } from "node:fs/promises";
-import { join as join5 } from "node:path";
+import { readFile as readFile6, rename as rename4, writeFile as writeFile5 } from "node:fs/promises";
+import { join as join6 } from "node:path";
 var FlushCursor = class {
   dir;
   path;
   tmpPath;
   constructor(dir) {
     this.dir = dir;
-    this.path = join5(dir, "flush_cursor.json");
+    this.path = join6(dir, "flush_cursor.json");
     this.tmpPath = `${this.path}.tmp`;
   }
   async read() {
     try {
-      const buf = await readFile4(this.path, "utf8");
+      const buf = await readFile6(this.path, "utf8");
       const parsed = JSON.parse(buf);
       return parsed.last_flushed_offset_bytes ?? 0;
     } catch (err) {
@@ -2273,14 +2667,14 @@ var FlushCursor = class {
   }
   async write(offset) {
     const body = { last_flushed_offset_bytes: offset };
-    await writeFile4(this.tmpPath, JSON.stringify(body), "utf8");
-    await rename3(this.tmpPath, this.path);
+    await writeFile5(this.tmpPath, JSON.stringify(body), "utf8");
+    await rename4(this.tmpPath, this.path);
   }
 };
 
 // dist/team/lib/backoff-state.mjs
-import { mkdir as mkdir4, readFile as readFile5, rename as rename4, writeFile as writeFile5 } from "node:fs/promises";
-import { join as join6 } from "node:path";
+import { mkdir as mkdir4, readFile as readFile7, rename as rename5, writeFile as writeFile6 } from "node:fs/promises";
+import { join as join7 } from "node:path";
 var DEFAULT2 = {
   consecutiveAuthFailures: 0,
   transientAttempts: 0
@@ -2293,7 +2687,7 @@ var BackoffState = class {
   tmpPath;
   constructor(dir) {
     this.dir = dir;
-    this.path = join6(dir, "backoff.json");
+    this.path = join7(dir, "backoff.json");
     this.tmpPath = `${this.path}.tmp`;
   }
   async read() {
@@ -2383,7 +2777,7 @@ var BackoffState = class {
   }
   async loadFile() {
     try {
-      const buf = await readFile5(this.path, "utf8");
+      const buf = await readFile7(this.path, "utf8");
       return { ...DEFAULT2, ...JSON.parse(buf) };
     } catch (err) {
       if (err.code === "ENOENT") {
@@ -2394,8 +2788,8 @@ var BackoffState = class {
   }
   async save(f) {
     await mkdir4(this.dir, { recursive: true });
-    await writeFile5(this.tmpPath, JSON.stringify(f), "utf8");
-    await rename4(this.tmpPath, this.path);
+    await writeFile6(this.tmpPath, JSON.stringify(f), "utf8");
+    await rename5(this.tmpPath, this.path);
   }
 };
 
@@ -2505,6 +2899,15 @@ function parseRetryAfter(h) {
 }
 
 // dist/team/lib/otlp-encoder.mjs
+var ATTR_DENY = /* @__PURE__ */ new Set([
+  "cwd",
+  "agent_transcript_path",
+  "last_assistant_message",
+  "tool_input_raw",
+  "tool_response_raw",
+  "prompt",
+  "description"
+]);
 var ATTR_TYPE = {
   // core attrs (every event)
   "fancysauce.event_uuid": "string",
@@ -2513,7 +2916,6 @@ var ATTR_TYPE = {
   "fancysauce.source": "string",
   "fancysauce.sequence": "int",
   // session.start
-  cwd: "string",
   model: "string",
   permission_mode: "string",
   "fancysauce.repo_url_hash": "string",
@@ -2522,12 +2924,13 @@ var ATTR_TYPE = {
   duration_wall_s: "int",
   // prompt.submit
   prompt_length: "int",
+  slash_command: "string",
   // tool_call.{start,complete,failed}
   tool_name: "string",
+  skill_name: "string",
   tool_input_hash: "string",
   input_size_bytes: "int",
   response_size_bytes: "int",
-  duration_ms: "int",
   success: "bool",
   correlation_id: "string",
   // subagent.{start,complete}
@@ -2543,10 +2946,19 @@ var ATTR_TYPE = {
   tokens_cache_create_1h: "int",
   request_id: "string",
   transcript_message_uuid: "string",
+  stop_reason: "string",
   // notification
   notification_type: "string",
   // task.completed
-  task_id: "string"
+  task_id: "string",
+  // subagent capture: subsession_id stamped on tool_call/api.request when
+  // a hook fires inside a Task subagent; cwd_hash replaces raw cwd on
+  // session.start; last_assistant_message_{size_bytes,hash} ride on
+  // subagent.complete (size+hash, never the body — wire-content principle).
+  subsession_id: "string",
+  cwd_hash: "string",
+  last_assistant_message_size_bytes: "int",
+  last_assistant_message_hash: "string"
 };
 function encodeOtlp(events, resource, observedTimeUnixNano) {
   const observed = observedTimeUnixNano ?? BigInt(Date.now()) * 1000000n;
@@ -2570,10 +2982,7 @@ function encodeResourceAttributes(r) {
     "service.name",
     "service.version",
     "fancysauce.schema_version",
-    "fancysauce.install_id",
-    "fancysauce.subject",
-    "fancysauce.subject_source",
-    "fancysauce.team"
+    "fancysauce.install_id"
   ];
   for (const key of order) {
     const v = r[key];
@@ -2602,6 +3011,9 @@ function encodeLogRecord(event, observedTimeUnixNano) {
   };
 }
 function encodeAnyValue(key, v) {
+  if (ATTR_DENY.has(key)) {
+    throw new Error(`Attribute ${key} is denied for privacy and must not appear on the wire`);
+  }
   const type = ATTR_TYPE[key];
   if (!type) {
     throw new Error(`Unknown attribute key: ${key} (add to ATTR_TYPE)`);
@@ -2640,8 +3052,8 @@ var COMPACT_THRESHOLD_BYTES = 1e6;
 async function tryFlush(input) {
   const start = Date.now();
   const deadline = start + input.budgetMs;
-  const queuePath = join7(input.dataDir, "queue.ndjson");
-  const flushLockPath = join7(input.dataDir, ".flush.lock");
+  const queuePath = join8(input.dataDir, "queue.ndjson");
+  const flushLockPath = join8(input.dataDir, ".flush.lock");
   const backoff = new BackoffState(input.dataDir);
   const cursor = new FlushCursor(input.dataDir);
   const health = new HealthState(input.stateDir);
@@ -2651,9 +3063,9 @@ async function tryFlush(input) {
     return { skipped: true, reason: "backoff deadline in future" };
   }
   try {
-    await readFile6(flushLockPath);
+    await readFile8(flushLockPath);
   } catch {
-    const fh = await open3(flushLockPath, "a");
+    const fh = await open4(flushLockPath, "a");
     await fh.close();
   }
   let release;
@@ -2720,7 +3132,7 @@ async function readBatch(queuePath, startOffset, maxEvents, maxBytes) {
   let fh = null;
   try {
     try {
-      fh = await open3(queuePath, "r");
+      fh = await open4(queuePath, "r");
     } catch {
       return { events: [], endOffset: startOffset };
     }
@@ -2771,7 +3183,7 @@ async function maybeCompact(dataDir2, cursor, queuePath) {
     let fh = null;
     try {
       try {
-        fh = await open3(queuePath, "r");
+        fh = await open4(queuePath, "r");
       } catch {
         return;
       }
@@ -2779,7 +3191,7 @@ async function maybeCompact(dataDir2, cursor, queuePath) {
       if (flushedOffset >= stat2.size) {
         await fh.close();
         fh = null;
-        await writeFile6(queuePath, "");
+        await writeFile7(queuePath, "");
         await cursor.resetUnlocked();
         return;
       }
@@ -2789,8 +3201,8 @@ async function maybeCompact(dataDir2, cursor, queuePath) {
       await fh.close();
       fh = null;
       const tmpPath = `${queuePath}.compact.tmp`;
-      await writeFile6(tmpPath, buf);
-      await rename5(tmpPath, queuePath);
+      await writeFile7(tmpPath, buf);
+      await rename6(tmpPath, queuePath);
       await cursor.resetUnlocked();
     } finally {
       if (fh)
@@ -2818,7 +3230,7 @@ async function reconcileConfigFingerprint(input, backoff, cursor, queuePath) {
 }
 async function dropQueue(dataDir2, queuePath, cursor) {
   await withDirLock(dataDir2, async () => {
-    await writeFile6(queuePath, "");
+    await writeFile7(queuePath, "");
     await cursor.resetUnlocked();
   });
 }
@@ -2861,12 +3273,12 @@ function remainingFlushBudgetMs(hookBudgetMs, elapsedMs, marginMs) {
 var HOOK_BUDGET_MS = 1800;
 var FLUSH_MARGIN_MS = 200;
 var QUEUE_CAP_BYTES = 100 * 1024 * 1024;
-var SCHEMA_VERSION = "1.0.0";
+var SCHEMA_VERSION = "1.0.5";
 function pluginVersion() {
   try {
     const candidatePaths = [
-      join8(import.meta.dirname, "../../../package.json"),
-      join8(process.cwd(), "package.json")
+      join9(import.meta.dirname, "../../../package.json"),
+      join9(process.cwd(), "package.json")
     ];
     for (const p of candidatePaths) {
       try {
@@ -2881,14 +3293,14 @@ function pluginVersion() {
   return "0.0.0";
 }
 function dataDir() {
-  return process.env.CLAUDE_PLUGIN_DATA || join8(homedir(), ".claude-plugin-data");
+  return process.env.CLAUDE_PLUGIN_DATA || join9(homedir2(), ".claude-plugin-data");
 }
 async function main() {
   const start = Date.now();
   const killer = setTimeout(() => process.exit(0), HOOK_BUDGET_MS);
   killer.unref?.();
   try {
-    const config = loadConfig({ argv: process.argv });
+    const config = loadConfig();
     if (!config)
       return;
     const hookPayload = readStdin();
@@ -2896,33 +3308,50 @@ async function main() {
       return;
     const root = dataDir();
     await mkdir5(root, { recursive: true });
-    const rawEvent = mapHookToEvent(hookPayload, 0);
-    const primary = filterEvent(rawEvent);
-    const tail = new TranscriptTail(join8(root, "state"));
-    const tailResult = await tail.tail(hookPayload.session_id, hookPayload.transcript_path, 1);
-    const events = primary ? [primary, ...tailResult.events] : [...tailResult.events];
-    const primaryDropped = primary ? 0 : 1;
-    const identity = await new IdentityResolver(root).resolve(hookPayload.cwd);
+    const identity = await new IdentityResolver(root).resolve(hookPayload.cwd ?? process.cwd());
     const resource = toResourceAttributes(identity, {
       pluginVersion: pluginVersion(),
-      schemaVersion: SCHEMA_VERSION,
-      team: config.team
+      schemaVersion: SCHEMA_VERSION
     });
-    const outboundDir = join8(root, "outbound");
+    const rawEvent = mapHookToEvent(hookPayload, 0);
+    const subagentPath = hookPayload.agent_transcript_path;
+    const enrichedRaw = rawEvent === null ? null : await enrichSubagentComplete(rawEvent, subagentPath);
+    const stamped = enrichedRaw && enrichedRaw.event_type === "session.start" && identity.repo_url_hash ? { ...enrichedRaw, attributes: { ...enrichedRaw.attributes, "fancysauce.repo_url_hash": identity.repo_url_hash } } : enrichedRaw;
+    const primary = stamped === null ? null : filterEvent(stamped, config.policy);
+    const outboundDir = join9(root, "outbound");
     await mkdir5(outboundDir, { recursive: true });
     const queue = new Queue(outboundDir, QUEUE_CAP_BYTES);
-    const serialized = events.map(serializeForQueue);
-    const result = await queue.append(serialized);
-    const health = new HealthState(join8(root, "state"));
+    const tail = new TranscriptTail(join9(root, "state"), {
+      errorLogPath: join9(root, "collect-error.log")
+    });
+    let queueDropped = 0;
+    let tailFilterDropped = 0;
+    await tail.tail(hookPayload.session_id, hookPayload.transcript_path, 1, async (tailEvents) => {
+      const filteredTail = [];
+      for (const ev of tailEvents) {
+        const f = filterEvent(ev, config.policy);
+        if (f === null)
+          tailFilterDropped++;
+        else
+          filteredTail.push(f);
+      }
+      const all = primary ? [primary, ...filteredTail] : filteredTail;
+      if (all.length === 0)
+        return;
+      const result = await queue.append(all.map(serializeForQueue));
+      queueDropped = result.dropped;
+    });
+    const primaryFilterDropped = stamped !== null && primary === null ? 1 : 0;
+    const health = new HealthState(join9(root, "state"));
     await health.touch();
-    const dropped = result.dropped + primaryDropped;
+    const dropped = queueDropped + tailFilterDropped + primaryFilterDropped;
     if (dropped > 0)
       await health.recordDrop(dropped);
     const remaining = remainingFlushBudgetMs(HOOK_BUDGET_MS, Date.now() - start, FLUSH_MARGIN_MS);
     if (remaining > 300) {
       await tryFlush({
         dataDir: outboundDir,
-        stateDir: join8(root, "state"),
+        stateDir: join9(root, "state"),
         apiKey: config.apiKey,
         endpoint: config.endpoint,
         resource,
@@ -2933,8 +3362,8 @@ async function main() {
     const msg = err instanceof Error ? `${err.message}
 ${err.stack ?? ""}` : String(err);
     try {
-      const logPath = join8(dataDir(), "collect-error.log");
-      await writeFile7(logPath, `${(/* @__PURE__ */ new Date()).toISOString()} ${msg}
+      const logPath = join9(dataDir(), "collect-error.log");
+      await writeFile8(logPath, `${(/* @__PURE__ */ new Date()).toISOString()} ${msg}
 `, { flag: "a" });
     } catch {
     }

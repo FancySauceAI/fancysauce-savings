@@ -2,6 +2,38 @@
 
 All public releases of `fancysauce-savings`. Most recent first.
 
+## v0.4.4 — 2026-05-10
+
+### Security
+
+- **API key removed from `node` argv** (F-02 narrowed). The rendered hook command now passes the key via an environment-variable prefix (`FANCYSAUCE_API_KEY=… node …`) rather than `--api-key …`. The shell process that interprets the rendered command still has the key in its own `argv` for the hook's lifetime; full closure (key written to a file at install time, read by the hook) is tracked as a follow-up.
+
+### Privacy
+
+- **Git email no longer collected** (F-03). Identity is `install_id`-only. Existing tenants will see a one-time identity rotation; `repo_url_hash` continues to scope events to a project. Schema bumped to `1.0.5` (covers the `FANCYSAUCE_TEAM`/`FANCYSAUCE_DISCLOSURE_NOTIFICATION` removal, the new `stop_reason` attribute, and the `tool_call.complete` field corrections below).
+
+### Features
+
+- **`api.request` carries `stop_reason`.** When a turn finalizes (`end_turn`, `tool_use`, `max_tokens`, `refusal`, `stop_sequence`), the assistant message's `stop_reason` is forwarded as a string attribute on `api.request`. Per-message; absent when not set. Lets the server distinguish finalized rows via `WHERE stop_reason IS NOT NULL` instead of denormalized heuristics.
+
+### Fixes
+
+- **`tool_call.complete` `success` and `duration_ms` are now correct.** Through 0.4.3, every `tool_call.complete` shipped `success=false` and `duration_ms=0` because the event-mapper never extracted these fields and the content-filter silently defaulted them. The mapper now stamps `success=true` for `PostToolUse` (failures route to `PostToolUseFailure → tool_call.failed`, which never carried these fields). `duration_ms` is dropped from the wire — CC's `PostToolUse` payload doesn't carry it, and the server can derive it more accurately from the `(tool_call.start.timestamp_ns, tool_call.complete.timestamp_ns)` pair joined on `correlation_id`.
+
+### Breaking
+
+- **Removed runtime env-var knobs.** `FANCYSAUCE_SHIP_REPO_URL`, `FANCYSAUCE_IMPORT_HISTORY`, `FANCYSAUCE_IMPORT_HISTORY_SINCE`, `FANCYSAUCE_ENDPOINT`, `FANCYSAUCE_TEAM`, and `FANCYSAUCE_DISCLOSURE_NOTIFICATION` are no longer honored. The only env var the hook reads is `FANCYSAUCE_API_KEY`. Build-time `--endpoint <url>` (passed to `package-plugin.mjs`) is the supported path for non-default ingest URLs. Tenants who set any of the removed env vars will see no warning — they are silently ignored under the closed-schema policy.
+
+### Build
+
+- **Production ingest endpoint is `https://ingest.preview.fancysauce.ai`.** A short-lived intermediate commit on `feat/v0.4.4-audit-response` shipped `https://ingest.fancysauce.ai`; the final v0.4.4 artifact ships the preview URL. Cross-file consistency tests now guard against future drift between `config.mts`, `package-plugin.mjs`, and `publish-dist.mjs`.
+
+### Backend coordination required
+
+- After publish, the dist repo's root `plugin.sha` file (`https://raw.githubusercontent.com/FancySauceAI/fancysauce-savings/<ref>/plugin.sha`) contains the 40-hex source SHA the artifact was built from.
+- Dashboard renderer must fetch this and render `plugin_sha` into per-tenant marketplace.json.
+- Plugin `source` block now requires both `ref` (human-readable tag) and `sha` (40-hex cryptographic pin).
+
 ## v0.4.3 — 2026-05-05
 
 ### Fixes

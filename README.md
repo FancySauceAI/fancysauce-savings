@@ -2,47 +2,30 @@
 
 Cost and usage observability for Claude Code
 
-**Version:** 0.4.4
+**Version:** 0.5.0
 
 ## About this Plugin
 
-fancysauce-savings helps individual contributors and teams better understand their token usage while using Claude Code.
+fancysauce-savings captures session, tool-call, and API-request telemetry for Claude Code and forwards it to your Fancysauce dashboard.
 
-To use fancysauce-savings, you'll need a Fancysauce account and a per-tenant install URL. If you don't have one yet, reach out to `hello@fancysauce.ai` and we'd be happy to get you set up.
-
-We use local and global git config to identify individual contributors within a team, falling back to a unique install ID if your git isn't configured.
-
-## Install (managed-settings)
-
-Paste the following into your Anthropic-console managed-settings block. Substitute `<paste-from-dashboard>` with the install URL from your Fancysauce dashboard.
-
-```json
-{
-  "extraKnownMarketplaces": {
-    "fancysauce": {
-      "source": {
-        "source": "url",
-        "url": "<paste-from-dashboard>"
-      }
-    }
-  },
-  "enabledPlugins": {
-    "fancysauce-savings@fancysauce": true
-  }
-}
-```
-
-That's it — no `env` block needed. The install URL carries your API key and endpoint to the plugin via the per-tenant marketplace.
-
-## Install (direct, single developer)
+## Install
 
 In Claude Code:
 
 ```
-/plugin marketplace add <paste-from-dashboard>
+/plugin marketplace add github:FancySauceAI/fancysauce-savings
 /plugin install fancysauce-savings@fancysauce
+/fancysauce:login
 ```
 
-## Rotation
+The first two commands install the plugin from this repo. The third opens your browser to the Fancysauce sign-in page; complete sign-in and a long-lived bearer credential lands at `~/.config/fancysauce/credentials.json`.
 
-If you need to rotate your install URL (for example, after a credential leak), regenerate it in the Fancysauce dashboard, paste the new URL into managed-settings, and push the update through your usual channel. Each developer's next Claude Code start picks up the new URL automatically.
+If you'd been running the plugin locally before signing in, run `/fancysauce:upload-history` to backfill the queued events. The runner is bounded and exits when the queue drains.
+
+## Slash commands
+
+- **`/fancysauce:login`** — Browser-based sign-in. Writes the bearer credential.
+- **`/fancysauce:upload-history`** — Spawn a bounded background runner to upload locally-queued history.
+- **`/fancysauce:upload-history --status`** — Report runner progress.
+- **`/fancysauce:reset`** — Interactive wipe of local plugin data (queue, cursors, session index, `install_id`). Asks for `wipe` to confirm. Preserves the credential file.
+- **`/fancysauce:reset --all`** — Same plus deletes `~/.config/fancysauce/credentials.json`.

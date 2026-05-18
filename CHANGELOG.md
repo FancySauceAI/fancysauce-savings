@@ -2,6 +2,20 @@
 
 All public releases of `fancysauce-savings`. Most recent first.
 
+## v0.5.0 — 2026-05-18
+
+v0.5.0 reshapes the install flow around local-first capture and a long-lived bearer credential.
+
+### Features
+
+- **Local-first capture.** Events are queued on disk on every fresh install. No network traffic to `ingest.preview.fancysauce.ai` until the user signs in. Statusline, end-of-session receipt, and cross-session session-index all work without any backend interaction.
+- **`/fancysauce:login` — browser-based sign-in.** A single command opens the browser to `https://preview.fancysauce.ai/cli/install` to authenticate, and a long-lived `fs_live_*` credential is exchanged and stored at `~/.config/fancysauce/credentials.json`.
+- **`/fancysauce:upload-history` — opt-in backfill.** After sign in, users can run this command to upload their local history to Fancysauce.
+- **`/fancysauce:reset` — local data wipe.** Interactive (`wipe` confirmation) wipe of queue, cursors, session index, and `install_id`. `--all` extends to the user-local credential file. `--queue-only` retains state. A managed system credential at `/etc/fancysauce/credentials.json` is never touched.
+- **MDM support.** System credentials at `/etc/fancysauce/credentials.json` take precedence over user-local credentials at resolve time. `/fancysauce:login` refuses (exit code `2`) when a managed credential is in effect; `/fancysauce:reset --all` warns and leaves the system credential intact. Lets fleets push tenant-scoped credentials without per-machine intervention.
+- **Plugin-scoped data directory.** Local data lives at `~/.claude/plugins/data/<plugin>-<marketplace-alias>/`.
+- **Per-session transcript tailing.** A per-session cursor under `state/sessions/<session_id>/transcript_cursor.json` tracks the last byte read from CC's transcript file, so resumed sessions don't re-emit historical events.
+
 ## v0.4.4 — 2026-05-10
 
 ### Security
@@ -30,9 +44,7 @@ All public releases of `fancysauce-savings`. Most recent first.
 
 ### Backend coordination required
 
-- After publish, the dist repo's root `plugin.sha` file (`https://raw.githubusercontent.com/FancySauceAI/fancysauce-savings/<ref>/plugin.sha`) contains the 40-hex source SHA the artifact was built from.
-- Dashboard renderer must fetch this and render `plugin_sha` into per-tenant marketplace.json.
-- Plugin `source` block now requires both `ref` (human-readable tag) and `sha` (40-hex cryptographic pin).
+- The rendered marketplace.json's plugin `source` block now requires both `ref` (human-readable tag) and `sha` (40-hex cryptographic pin). CC validates the SHA against the cloned ref at install — a force-moved tag is detected.
 
 ## v0.4.3 — 2026-05-05
 

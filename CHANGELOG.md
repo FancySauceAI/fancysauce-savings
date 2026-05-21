@@ -2,6 +2,18 @@
 
 All public releases of `fancysauce-savings`. Most recent first.
 
+## v0.7.2 — 2026-05-21
+
+### Fixes
+
+- Plan-selection funnel: Enterprise is now its own Q1 entry (was conflated with "Show all tiers" in v0.7.1). Q1 options are now Pro / Max / Team / Enterprise — exactly 4 to match AskUserQuestion's cap. Q2 sub-questions reach all 7 tiers cleanly:
+    - Max → 5x / 20x
+    - Team → Standard / Premium
+    - Enterprise → Usage-based / Premium seat
+- "Show all tiers" is no longer an in-funnel option. Users who want the multi-tier comparison can invoke the slash command or bin directly without `--plan`.
+
+No code or pricing changes — SKILL.md and the slash-command markdown are the only files updated.
+
 ## v0.7.1 — 2026-05-21
 
 ### Fixes

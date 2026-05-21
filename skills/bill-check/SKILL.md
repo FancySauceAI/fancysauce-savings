@@ -16,29 +16,31 @@ funnel to cover all seven plan tiers cleanly.
 - **Pro** — Individual Pro plan
 - **Max** — Individual Max 5x or 20x (you'll ask which next)
 - **Team** — Team plan (Standard or Premium seat)
-- **Enterprise / Show all** — Enterprise plan, multiple plans, or skip filtering entirely
+- **Enterprise** — Enterprise plan (usage-based or Premium seat)
 
-**Question 2 — only if the user picked Max or Team:**
+**Question 2 — only if the user picked Max, Team, or Enterprise:**
 
-If they picked **Max**, ask "Which Max tier?":
-- **Max 5x** → `max-5x`
-- **Max 20x** → `max-20x`
+If they picked **Max**, ask "Which Max tier?" (2 options):
+- **Max 5x** → `--plan max-5x`
+- **Max 20x** → `--plan max-20x`
 
-If they picked **Team**, ask "Which Team seat?":
-- **Team Standard** → `team-std`
-- **Team Premium** → `team-prem`
+If they picked **Team**, ask "Which Team seat?" (2 options):
+- **Team Standard** → `--plan team-std`
+- **Team Premium** → `--plan team-prem`
+
+If they picked **Enterprise**, ask "Which Enterprise tier?" (2 options):
+- **Usage-based** → `--plan ent-usage`  *(credit is a public estimate)*
+- **Premium seat** → `--plan ent-seat`  *(credit is a public estimate)*
 
 If they picked **Pro** in Q1: skip Q2, use `--plan pro`.
 
-If they picked **Enterprise / Show all** in Q1: skip Q2, run **without**
-`--plan` (the user gets the multi-tier comparison table). Enterprise
-credits are public estimates, so the all-tiers view is usually most
-useful for those users.
+When the user picks an Enterprise tier, briefly note in the narrative
+that the credit ($20/mo usage-based, $200/mo Premium seat) is a public
+estimate — actual contract credits may differ.
 
-(`pro`, `max-5x`, `max-20x`, `team-std`, `team-prem` are the valid
-`--plan` values. `ent-usage` and `ent-seat` exist on the bin's flag
-allowlist but are best reached via direct CLI rather than this skill,
-since their credits are estimates.)
+(There's no in-funnel option for the all-tiers view — that's by design.
+If the user wants the multi-tier comparison, they can invoke the slash
+command or bin without any `--plan` flag.)
 
 ## Step 2: run the analyzer
 

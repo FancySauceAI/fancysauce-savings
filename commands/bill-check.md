@@ -6,23 +6,28 @@ This command is interactive — it walks the user through three steps.
 
 ## Step 1: ask which plan they're on (two-step funnel)
 
-AskUserQuestion caps options at 4 per question, so use a two-step
-funnel.
+AskUserQuestion caps options at 4 per question, so use a two-step funnel.
 
 **Question 1 — Plan family** (exactly 4 options):
 
-- **Pro** → `pro`, no Q2 needed
-- **Max** → ask Q2 below
-- **Team** → ask Q2 below
-- **Enterprise / Show all** → omit `--plan` (multi-tier table)
+- **Pro** → `--plan pro`, no Q2 needed
+- **Max** → ask Q2A below
+- **Team** → ask Q2B below
+- **Enterprise** → ask Q2C below
 
-**Question 2 (only if Max or Team in Q1):**
+**Question 2 (2 options each):**
 
-If Max: "Which Max tier?" → **Max 5x** = `max-5x`, **Max 20x** = `max-20x`.
-If Team: "Which Team seat?" → **Team Standard** = `team-std`, **Team Premium** = `team-prem`.
+- Q2A (Max): **Max 5x** = `max-5x` · **Max 20x** = `max-20x`
+- Q2B (Team): **Team Standard** = `team-std` · **Team Premium** = `team-prem`
+- Q2C (Enterprise): **Usage-based** = `ent-usage` · **Premium seat** = `ent-seat`
+
+When the user picks an Enterprise tier, mention briefly in the narrative
+that those credits are public estimates — their actual contract may differ.
 
 If the user already passed `--plan` (or any other flags) as positional
-arguments to the slash command, honor those and skip the prompts.
+arguments to the slash command, honor those and skip the prompts. The
+multi-tier "show all" view isn't offered in the funnel by design — a
+user who wants it can invoke the slash command or bin without `--plan`.
 
 ## Step 2: run the analyzer
 

@@ -2,6 +2,13 @@
 
 All public releases of `fancysauce-savings`. Most recent first.
 
+## v0.7.1 — 2026-05-21
+
+### Fixes
+
+- Skill prompt now uses a two-question funnel for plan selection. The v0.7.0 SKILL.md listed all 8 plan choices (Pro, Max 5x, Max 20x, Team Standard, Team Premium, Enterprise usage-based, Enterprise Premium seat, Skip) in a single AskUserQuestion call. AskUserQuestion caps at 4 options, so Team plans were silently dropped from the user-visible picker. Q1 now asks plan family (Pro / Max / Team / Enterprise-or-show-all) and Q2 asks the sub-tier only for Max or Team.
+- No code or pricing changes; SKILL.md and the slash-command markdown are the only files updated.
+
 ## v0.7.0 — 2026-05-21
 
 ### Breaking changes

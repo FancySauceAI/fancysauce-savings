@@ -6,25 +6,39 @@ The user is asking **"how does the June 15 Agent SDK billing change
 affect me?"** Don't just run the script and dump output — walk the
 user through it in three steps:
 
-## Step 1: ask which plan they're on
+## Step 1: ask which plan they're on (two-step funnel)
 
-Before running anything, ask the user which Claude plan they're on so
-the output focuses on their specific tier. Use AskUserQuestion (or the
-equivalent) with these exact options:
+AskUserQuestion caps options at 4 per question, so use a two-question
+funnel to cover all seven plan tiers cleanly.
+
+**Question 1 — Plan family** (exactly these 4 options):
 
 - **Pro** — Individual Pro plan
-- **Max 5x** — Individual Max 5x plan
-- **Max 20x** — Individual Max 20x plan
-- **Team (Standard)** — Standard seat on a Team plan
-- **Team (Premium)** — Premium seat on a Team plan
-- **Enterprise (usage-based)** — Enterprise plan, usage-based billing
-- **Enterprise (Premium seat)** — Enterprise plan, Premium seat
-- **Skip / show all tiers** — User doesn't know or wants the full comparison
+- **Max** — Individual Max 5x or 20x (you'll ask which next)
+- **Team** — Team plan (Standard or Premium seat)
+- **Enterprise / Show all** — Enterprise plan, multiple plans, or skip filtering entirely
 
-Map their answer to the corresponding `--plan` flag value:
-`pro`, `max-5x`, `max-20x`, `team-std`, `team-prem`, `ent-usage`,
-`ent-seat`. If they pick "Skip / show all tiers", run the script with
-no `--plan` flag.
+**Question 2 — only if the user picked Max or Team:**
+
+If they picked **Max**, ask "Which Max tier?":
+- **Max 5x** → `max-5x`
+- **Max 20x** → `max-20x`
+
+If they picked **Team**, ask "Which Team seat?":
+- **Team Standard** → `team-std`
+- **Team Premium** → `team-prem`
+
+If they picked **Pro** in Q1: skip Q2, use `--plan pro`.
+
+If they picked **Enterprise / Show all** in Q1: skip Q2, run **without**
+`--plan` (the user gets the multi-tier comparison table). Enterprise
+credits are public estimates, so the all-tiers view is usually most
+useful for those users.
+
+(`pro`, `max-5x`, `max-20x`, `team-std`, `team-prem` are the valid
+`--plan` values. `ent-usage` and `ent-seat` exist on the bin's flag
+allowlist but are best reached via direct CLI rather than this skill,
+since their credits are estimates.)
 
 ## Step 2: run the analyzer
 

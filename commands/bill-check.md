@@ -4,23 +4,25 @@ description: Estimate the impact of the 2026-06-15 Agent SDK billing change on t
 
 This command is interactive — it walks the user through three steps.
 
-## Step 1: ask which plan they're on
+## Step 1: ask which plan they're on (two-step funnel)
 
-Before running anything, ask which Claude plan the user is on so the
-output focuses on their specific tier. Use AskUserQuestion (or the
-equivalent) with these options, mapping each to a `--plan` value:
+AskUserQuestion caps options at 4 per question, so use a two-step
+funnel.
 
-- **Pro** → `pro`
-- **Max 5x** → `max-5x`
-- **Max 20x** → `max-20x`
-- **Team (Standard)** → `team-std`
-- **Team (Premium)** → `team-prem`
-- **Enterprise (usage-based)** → `ent-usage`
-- **Enterprise (Premium seat)** → `ent-seat`
-- **Skip / show all tiers** → omit `--plan`
+**Question 1 — Plan family** (exactly 4 options):
+
+- **Pro** → `pro`, no Q2 needed
+- **Max** → ask Q2 below
+- **Team** → ask Q2 below
+- **Enterprise / Show all** → omit `--plan` (multi-tier table)
+
+**Question 2 (only if Max or Team in Q1):**
+
+If Max: "Which Max tier?" → **Max 5x** = `max-5x`, **Max 20x** = `max-20x`.
+If Team: "Which Team seat?" → **Team Standard** = `team-std`, **Team Premium** = `team-prem`.
 
 If the user already passed `--plan` (or any other flags) as positional
-arguments to the slash command, honor those and skip the prompt.
+arguments to the slash command, honor those and skip the prompts.
 
 ## Step 2: run the analyzer
 

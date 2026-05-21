@@ -2,6 +2,21 @@
 
 All public releases of `fancysauce-savings`. Most recent first.
 
+## v0.6.1 — 2026-05-21
+
+### Breaking changes (slash commands)
+
+- Slash commands moved from `commands/fancysauce/<name>.md` to `commands/<name>.md`. The middle `fancysauce` segment was a leftover from when the plugin itself was named `fancysauce`, and now just duplicated the brand. New invocation form:
+    - `/fancysauce-savings:login`              (was `:fancysauce:login`)
+    - `/fancysauce-savings:upload-history`     (was `:fancysauce:upload-history`)
+    - `/fancysauce-savings:reset`              (was `:fancysauce:reset`)
+    - `/fancysauce-savings:price-hike-estimator` (was `:fancysauce:price-hike-estimator`)
+- Skill name is unchanged: `fancysauce-savings:price-hike-estimator`.
+
+### Documentation
+
+- README slash-command list now matches the new path shape and includes a `price-hike-estimator` entry (was missing).
+
 ## v0.6.0 — 2026-05-21
 
 ### Features

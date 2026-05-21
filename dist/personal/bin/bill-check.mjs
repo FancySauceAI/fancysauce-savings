@@ -1,6 +1,6 @@
 import { createRequire as __cr } from 'node:module'; const require = __cr(import.meta.url);
 
-// dist/personal/bin/price-hike-estimator.mjs
+// dist/personal/bin/bill-check.mjs
 import { createReadStream, readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
 import { createInterface } from "node:readline";
 import { parseArgs } from "node:util";
@@ -155,29 +155,40 @@ function buildPlanImpact(agenticBurn, interactiveBurn, planFilter) {
     verdict: classifyVerdict(agenticBurn, tier.credit)
   }));
   const m = (n) => `$${n.toFixed(2)}`;
+  const my = (monthlyAmt) => `${m(monthlyAmt)}/mo (~${m(monthlyAmt * 12)}/yr)`;
   const ratio = agenticBurn > 0 ? interactiveBurn / agenticBurn : Infinity;
   let bottomLine;
   if (agenticBurn === 0) {
-    bottomLine = `**Non-event.** No Agent SDK or \`claude -p\` activity in your history. The June 15 change does nothing to your workflow.`;
+    bottomLine = `**Non-event.** No programmatic usage (Agent SDK / \`claude -p\`) in your history. The June 15 change does nothing to your workflow.`;
+  } else if (tiers.length === 1) {
+    const t = tiers[0];
+    const interactiveSuffix = ratio >= 5 ? ` Interactive usage is ~${ratio.toFixed(0)}\xD7 larger (${my(interactiveBurn)}) and stays on plan-normal limits.` : "";
+    if (t.verdict === "over") {
+      bottomLine = `**Plan for overage.** Your ${my(agenticBurn)} programmatic burn exceeds ${t.tier.label}'s ${m(t.tier.credit)}/mo Agent SDK credit by ${my(-t.headroom)}. After June 15, expect overage charges unless usage drops.`;
+    } else if (t.verdict === "tight") {
+      bottomLine = `**Watch the cap.** Your ${my(agenticBurn)} programmatic burn is more than half ${t.tier.label}'s ${m(t.tier.credit)}/mo Agent SDK credit (${my(t.headroom)} headroom). A modest growth in automation would push you into overage after June 15.`;
+    } else {
+      bottomLine = `**Free runway.** Your ${my(agenticBurn)} programmatic burn fits ${t.tier.label}'s ${m(t.tier.credit)}/mo Agent SDK credit with ${my(t.headroom)} of unused headroom.` + interactiveSuffix + ` The new credit is effectively bonus capacity: any interactive work you shift to scripts or the SDK after June 15 lands on this separate budget.`;
+    }
   } else {
     const overs = tiers.filter((t) => t.verdict === "over");
     const lowCreditTiers = tiers.filter((t) => t.tier.credit <= 20);
     const midCreditTiers = tiers.filter((t) => t.tier.credit > 20 && t.tier.credit <= 100);
     if (overs.length === tiers.length) {
       const topTier = overs.reduce((a, b) => a.tier.credit >= b.tier.credit ? a : b);
-      bottomLine = `**Plan for overage.** Your ${m(agenticBurn)}/mo programmatic burn exceeds every Agent SDK credit tier \u2014 even ${topTier.tier.label} falls short by ${m(-topTier.headroom)}. After June 15, expect overage charges unless usage drops.`;
+      bottomLine = `**Plan for overage.** Your ${my(agenticBurn)} programmatic burn exceeds every Agent SDK credit tier \u2014 even ${topTier.tier.label} falls short by ${my(-topTier.headroom)}. After June 15, expect overage charges unless usage drops.`;
     } else if (overs.length > 0 && lowCreditTiers.every((t) => t.verdict === "over") && midCreditTiers.every((t) => t.verdict === "over")) {
-      bottomLine = `**Get on the top tier or pay overage.** Your ${m(agenticBurn)}/mo programmatic burn fits inside Max 20x's $200 credit but blows past every cheaper tier. After June 15, lower tiers will hit overage.`;
+      bottomLine = `**Get on the top tier or pay overage.** Your ${my(agenticBurn)} programmatic burn fits inside Max 20x's $200/mo (~$2,400/yr) credit but blows past every cheaper tier. After June 15, lower tiers will hit overage.`;
     } else if (lowCreditTiers.every((t) => t.verdict === "over")) {
-      bottomLine = `**Pro / Team-Standard won't cut it.** Your ${m(agenticBurn)}/mo programmatic burn exceeds the $20 Agent SDK credit on those tiers. You'll need Max 5x ($100) or higher to absorb the change.`;
+      bottomLine = `**Pro / Team-Standard won't cut it.** Your ${my(agenticBurn)} programmatic burn exceeds the $20/mo (~$240/yr) Agent SDK credit on those tiers. You'll need Max 5x ($100/mo, ~$1,200/yr) or higher to absorb the change.`;
     } else if (tiers.every((t) => t.verdict === "well-under") && ratio >= 5) {
       const lowestHeadroom = Math.min(...tiers.map((t) => t.headroom));
-      bottomLine = `**Free runway.** Your ${m(agenticBurn)}/mo programmatic burn fits inside every tier with at least ${m(lowestHeadroom)} of unused headroom \u2014 and your interactive usage is ~${ratio.toFixed(0)}\xD7 larger ($${interactiveBurn.toFixed(2)}/mo). The new credit is effectively bonus capacity: any interactive work you can shift to scripts or the SDK after June 15 lands on this separate budget.`;
+      bottomLine = `**Free runway.** Your ${my(agenticBurn)} programmatic burn fits inside every tier with at least ${my(lowestHeadroom)} of unused headroom \u2014 and your interactive usage is ~${ratio.toFixed(0)}\xD7 larger (${my(interactiveBurn)}, stays on plan-normal limits). The new credit is effectively bonus capacity: any interactive work you shift to scripts or the SDK after June 15 lands on this separate budget.`;
     } else if (tiers.every((t) => t.verdict === "well-under")) {
-      bottomLine = `**Plenty of headroom.** Your ${m(agenticBurn)}/mo programmatic burn fits comfortably inside every tier's Agent SDK credit. Interactive usage (${m(interactiveBurn)}/mo) is unaffected.`;
+      bottomLine = `**Plenty of headroom.** Your ${my(agenticBurn)} programmatic burn fits comfortably inside every Agent SDK credit tier. Interactive usage (${my(interactiveBurn)}) is unaffected.`;
     } else {
       const tightLabels = tiers.filter((t) => t.verdict === "tight").map((t) => t.tier.label).join(", ");
-      bottomLine = `**Watch the cheaper tiers.** Your ${m(agenticBurn)}/mo programmatic burn is more than half the Agent SDK credit on: ${tightLabels}. A modest growth in automation work would push you into overage there.`;
+      bottomLine = `**Watch the cheaper tiers.** Your ${my(agenticBurn)} programmatic burn is more than half the Agent SDK credit on: ${tightLabels}. A modest growth in automation would push those tiers into overage.`;
     }
   }
   return {
@@ -264,16 +275,18 @@ function renderMarkdown(agg, pricing, meta) {
     cost: acc.cost + r.cost
   }), { sessions: 0, input: 0, output: 0, cacheRead: 0, cost: 0 });
   const monthlyMultiplier = meta.dateRange ? DAYS_PER_MONTH / meta.dateRange.days : null;
+  const yearlyMultiplier = monthlyMultiplier === null ? null : monthlyMultiplier * 12;
   const monthly = (cost) => monthlyMultiplier === null ? "\u2014" : money(cost * monthlyMultiplier);
+  const yearly = (cost) => yearlyMultiplier === null ? "\u2014" : money(cost * yearlyMultiplier);
   const lines = [];
   lines.push("# Usage by entrypoint");
   lines.push("");
-  lines.push("| Entrypoint | Sessions | Input | Output | Cache read | Est. cost | Est./mo |");
-  lines.push("|---|---:|---:|---:|---:|---:|---:|");
+  lines.push("| Entrypoint | Sessions | Input | Output | Cache read | Est. cost | Est./mo | Est./yr |");
+  lines.push("|---|---:|---:|---:|---:|---:|---:|---:|");
   for (const r of rows) {
-    lines.push(`| ${displayEntrypoint(r.entrypoint)} | ${r.sessions.toLocaleString("en-US")} | ${abbr(r.input)} | ${abbr(r.output)} | ${abbr(r.cacheRead)} | ${money(r.cost)} | ${monthly(r.cost)} |`);
+    lines.push(`| ${displayEntrypoint(r.entrypoint)} | ${r.sessions.toLocaleString("en-US")} | ${abbr(r.input)} | ${abbr(r.output)} | ${abbr(r.cacheRead)} | ${money(r.cost)} | ${monthly(r.cost)} | ${yearly(r.cost)} |`);
   }
-  lines.push(`| **Total** | ${total.sessions.toLocaleString("en-US")} | ${abbr(total.input)} | ${abbr(total.output)} | ${abbr(total.cacheRead)} | ${money(total.cost)} | ${monthly(total.cost)} |`);
+  lines.push(`| **Total** | ${total.sessions.toLocaleString("en-US")} | ${abbr(total.input)} | ${abbr(total.output)} | ${abbr(total.cacheRead)} | ${money(total.cost)} | ${monthly(total.cost)} | ${yearly(total.cost)} |`);
   lines.push("");
   lines.push(`Pricing as of ${pricing.last_updated} (${pricing.source_url}).`);
   if (meta.dateRange) {
@@ -294,20 +307,38 @@ function renderMarkdown(agg, pricing, meta) {
   }
   if (meta.planImpact) {
     const pi = meta.planImpact;
+    const yr = (mo) => mo * 12;
     lines.push("");
-    lines.push(`## Agent SDK billing impact (effective ${pi.effectiveDate})`);
+    lines.push(`## Programmatic usage impact (effective ${pi.effectiveDate})`);
     lines.push("");
-    lines.push(`Starting ${pi.effectiveDate}, Agent SDK and \`claude -p\` usage move off plan-normal limits and onto a separate monthly credit. Your programmatic burn at full API rates: **${money(pi.agenticBurnUsdPerMonth)}/month**. Interactive remains on plan limits (${money(pi.interactiveUsdPerMonth)}/month, unaffected).`);
+    lines.push(`Starting ${pi.effectiveDate}, programmatic usage (Agent SDK + \`claude -p\`) moves off plan-normal limits onto a separate monthly credit. Your programmatic burn at full API rates: **${money(pi.agenticBurnUsdPerMonth)}/mo** (~${money(yr(pi.agenticBurnUsdPerMonth))}/yr). Interactive remains on plan limits (${money(pi.interactiveUsdPerMonth)}/mo, ~${money(yr(pi.interactiveUsdPerMonth))}/yr, unaffected).`);
     lines.push("");
-    lines.push("| Plan tier | Monthly credit | Your burn | Headroom | Verdict |");
-    lines.push("|---|---:|---:|---:|---|");
-    for (const t of pi.tiers) {
+    if (pi.tiers.length === 1) {
+      const t = pi.tiers[0];
       const creditLabel = t.tier.estimated ? `${money(t.tier.credit)} (est.)` : money(t.tier.credit);
-      const headroomLabel = t.headroom >= 0 ? money(t.headroom) : `\u2212${money(-t.headroom).slice(1)}`;
-      lines.push(`| ${t.tier.label} | ${creditLabel} | ${money(pi.agenticBurnUsdPerMonth)} | ${headroomLabel} | ${verdictLabel(t.verdict)} |`);
+      const headroomMo = t.headroom;
+      const headroomYr = yr(headroomMo);
+      const headroomLabel = headroomMo >= 0 ? `${money(headroomMo)}/mo (~${money(headroomYr)}/yr) unused` : `\u2212${money(-headroomMo).slice(1)}/mo (~\u2212${money(-headroomYr).slice(1)}/yr) shortfall`;
+      lines.push(`- **Plan:** ${t.tier.label}`);
+      lines.push(`- **Agent SDK credit:** ${creditLabel}/mo (~${money(yr(t.tier.credit))}/yr)`);
+      lines.push(`- **Your burn:** ${money(pi.agenticBurnUsdPerMonth)}/mo (~${money(yr(pi.agenticBurnUsdPerMonth))}/yr)`);
+      lines.push(`- **Headroom:** ${headroomLabel}`);
+    } else {
+      lines.push("| Plan tier | Credit (mo) | Credit (yr) | Your burn (mo) | Headroom (mo) | Headroom (yr) | Verdict |");
+      lines.push("|---|---:|---:|---:|---:|---:|---|");
+      for (const t of pi.tiers) {
+        const creditMo = t.tier.estimated ? `${money(t.tier.credit)} (est.)` : money(t.tier.credit);
+        const creditYr = money(yr(t.tier.credit));
+        const headMo = t.headroom >= 0 ? money(t.headroom) : `\u2212${money(-t.headroom).slice(1)}`;
+        const headYr = t.headroom >= 0 ? money(yr(t.headroom)) : `\u2212${money(-yr(t.headroom)).slice(1)}`;
+        lines.push(`| ${t.tier.label} | ${creditMo} | ${creditYr} | ${money(pi.agenticBurnUsdPerMonth)} | ${headMo} | ${headYr} | ${verdictLabel(t.verdict)} |`);
+      }
     }
     lines.push("");
-    lines.push(`**Bottom line:** ${pi.bottomLine}`);
+    lines.push("---");
+    lines.push(`### Bottom line`);
+    lines.push("");
+    lines.push(pi.bottomLine);
   }
   return lines.join("\n") + "\n";
 }
@@ -545,7 +576,7 @@ if (isDirectInvocation) {
   } catch {
   }
   main({ projectsDir: cliProjectsDir, pricingPath, argv: process.argv.slice(2), stdout: process.stdout }).catch((err) => {
-    process.stderr.write(`price-hike-estimator: ${err.message}
+    process.stderr.write(`bill-check: ${err.message}
 `);
     process.exit(1);
   });

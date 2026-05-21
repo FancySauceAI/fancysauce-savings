@@ -2,6 +2,25 @@
 
 All public releases of `fancysauce-savings`. Most recent first.
 
+## v0.7.0 — 2026-05-21
+
+### Breaking changes
+
+- Skill / slash command renamed: **`price-hike-estimator` → `bill-check`**.
+    - Skill: `fancysauce-savings:price-hike-estimator` → `fancysauce-savings:bill-check`
+    - Slash command: `/fancysauce-savings:price-hike-estimator` → `/fancysauce-savings:bill-check`
+
+### Features
+
+- **Yearly amortization.** The usage-by-entrypoint table gains an `Est./yr` column (12× monthly). The Plan Impact section now shows both monthly and yearly figures for credit, burn, headroom, and bottom-line verdicts.
+- **Single-tier focused output.** When the user invokes with `--plan <tier>`, the multi-tier comparison table collapses to a focused four-line block (Plan / Credit / Your burn / Headroom). The bottom-line verdict is phrased only about the selected tier, no extra noise from the six tiers the user didn't pick.
+- **Interactive flow.** The skill (and slash command) now lead with `AskUserQuestion` to learn which Claude plan the user is on, then run `bill-check.mjs --plan <id>` automatically. The user can pick "Skip / show all tiers" to get the full multi-tier comparison.
+- **Terminology.** The combined `sdk-cli` + `sdk-py` + `sdk-ts` bucket is now called **"programmatic usage"** consistently in user-facing output. Section header is now "Programmatic usage impact" (was "Agent SDK billing impact").
+
+### Fixes
+
+- Verdict-classification bug under `--plan` filtering: when the tier list was narrowed to one entry, the multi-tier branching incorrectly matched "Pro / Team-Standard won't cut it" for any well-under-cap selection. Fix introduces a dedicated single-tier verdict path that speaks only about the selected tier.
+
 ## v0.6.1 — 2026-05-21
 
 ### Breaking changes (slash commands)

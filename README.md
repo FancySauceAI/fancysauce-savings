@@ -2,7 +2,7 @@
 
 Cost and usage observability for Claude Code
 
-**Version:** 0.6.1
+**Version:** 0.7.0
 
 ## About this Plugin
 
@@ -30,4 +30,4 @@ If you'd been running the plugin locally before signing in, run `/fancysauce-sav
 - **`/fancysauce-savings:upload-history --status`** — Report runner progress.
 - **`/fancysauce-savings:reset`** — Interactive wipe of local plugin data (queue, cursors, session index, `install_id`). Asks for `wipe` to confirm. Preserves the credential file.
 - **`/fancysauce-savings:reset --all`** — Same plus deletes `~/.config/fancysauce/credentials.json`.
-- **`/fancysauce-savings:price-hike-estimator`** — Walk local Claude Code transcripts and estimate the impact of Anthropic's 2026-06-15 Agent SDK billing change against your usage pattern. Flags: `--since YYYY-MM-DD`, `--plan <tier>`, `--json`, `--projects-dir <path>`.
+- **`/fancysauce-savings:bill-check`** — Walk local Claude Code transcripts and estimate the impact of Anthropic's 2026-06-15 Agent SDK billing change against your usage pattern. Flags: `--since YYYY-MM-DD`, `--plan <tier>`, `--json`, `--projects-dir <path>`.

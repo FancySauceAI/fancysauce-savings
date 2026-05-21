@@ -2,6 +2,24 @@
 
 All public releases of `fancysauce-savings`. Most recent first.
 
+## v0.6.0 — 2026-05-21
+
+### Features
+
+- New `price-hike-estimator` skill, slash command, and bin: walks the user's local Claude Code transcripts, breaks usage down by invocation entrypoint (Interactive / Headless / Agent SDK / VSCode), estimates per-month cost from bundled pricing, and computes per-tier headroom against Anthropic's 2026-06-15 Agent SDK billing change. The skill leads the model with a categorical verdict (`Non-event`, `Free runway`, `Watch the cheaper tiers`, `Plan for overage`, etc.) framed as problem or opportunity for the user's specific pattern (#39).
+- CLI flags: `--since YYYY-MM-DD` (date filter), `--plan <tier>` (narrows the impact section to one plan tier: pro / max-5x / max-20x / team-std / team-prem / ent-usage / ent-seat), `--json` (structured output), `--projects-dir` (override default `~/.claude/projects`).
+- Bundled pricing covers Claude 4.x flagship models (Opus 4.7 / 4.6 / 4.5 / 4.1 / 4, Sonnet 4.6 / 4.5 / 4, Haiku 4.5) plus retired Haiku 3.5 — sufficient for the trailing ~6 months of historical transcripts.
+- Subagent transcripts (under `<sid>/subagents/*.jsonl`) now roll up into the parent session's totals so heavy Task-tool usage isn't undercounted (~26% input / 33% cache-read uplift on heavy-subagent histories).
+
+### Fixes
+
+- `isDirectInvocation` in the bin realpaths both sides of the comparison so a symlinked install path (e.g. macOS `/tmp` → `/private/tmp`) doesn't silently bypass `main()`.
+- SKILL.md narrative-context dollar amounts are spelled out as USD literals so they survive CC's skill-injection variable expansion into the model context.
+
+### Documentation
+
+- README + CHANGELOG follow-on tweaks from the v0.5.0 release work.
+
 ## v0.5.0 — 2026-05-18
 
 v0.5.0 reshapes the install flow around local-first capture and a long-lived bearer credential.

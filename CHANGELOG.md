@@ -2,6 +2,12 @@
 
 All public releases of `fancysauce-savings`. Most recent first.
 
+## v0.8.0 — 2026-05-22
+
+### Fixes
+
+- fix(skill): add Enterprise as own Q1 family; drop show-all from Q2
+
 ## v0.7.2 — 2026-05-21
 
 ### Fixes

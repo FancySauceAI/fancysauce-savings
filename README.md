@@ -2,7 +2,7 @@
 
 Cost and usage observability for Claude Code
 
-**Version:** 0.7.2
+**Version:** 0.8.0
 
 ## About this Plugin
 
@@ -13,7 +13,7 @@ fancysauce-savings captures session, tool-call, and API-request telemetry for Cl
 In Claude Code:
 
 ```
-/plugin marketplace add FancySauceAI/fancysauce-savings
+/plugin marketplace add FancysauceAI/fancysauce-savings
 /plugin install fancysauce-savings@fancysauce
 /reload-plugins
 /fancysauce-savings:login
